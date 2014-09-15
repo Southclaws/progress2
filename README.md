@@ -8,6 +8,15 @@ Library originally written by Flávio Toribio (flavio_toibio@hotmail.com)
 Now maintained by Southclaw in version 2+ with new features.
 
 
+# Preview
+
+![http://puu.sh/byvSQ/c512d56383.gif](http://puu.sh/byvSQ/c512d56383.gif)
+
+![http://puu.sh/byxVW/f3d764d030.gif](http://puu.sh/byxVW/f3d764d030.gif)
+
+![http://puu.sh/byBqe/6bf0e4e57c.gif](http://puu.sh/byBqe/6bf0e4e57c.gif)
+
+
 # Resources
 
 
