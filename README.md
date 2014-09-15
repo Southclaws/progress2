@@ -2,6 +2,8 @@
 
 Progress bar library v2.0.1
 
+A SA:MP UI library for rendering progress bars used to visualise all manner of data from health to a countdown timer.
+
 Library originally written by Flávio Toribio (flavio_toibio@hotmail.com)
 Now maintained by Southclaw in version 2+ with new features.
 
