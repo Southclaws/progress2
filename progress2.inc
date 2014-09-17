@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Progress Bar 2.0.1
+	Progress Bar 2.0.2
 
 		A SA:MP UI library for rendering progress bars used to visualise all
 		manner of data from health to a countdown timer.
@@ -89,7 +89,7 @@ static
 #endif
 
 
-forward PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2, colour, Float:max=100.0, direction=BAR_DIRECTION_RIGHT);
+forward PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2, colour = 0xFF1C1CFF, Float:max=100.0, direction=BAR_DIRECTION_RIGHT);
 forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
 
 
@@ -100,7 +100,7 @@ forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
 ==============================================================================*/
 
 
-Float:pb_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction)
+stock Float:pb_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction)
 {
 	new Float:result;
 
@@ -122,7 +122,7 @@ Float:pb_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction
 	return result;
 }
 
-_bar_NewID(playerid)
+stock _bar_NewID(playerid)
 {
 #if defined _Y_ITERATE_LOCAL_VERSION
 	return Iter_Free(pbar_Index[playerid]);
@@ -147,7 +147,7 @@ _bar_NewID(playerid)
 ==============================================================================*/
 
 
-stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width = 55.5, Float:height = 3.2, colour, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT)
+stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width = 55.5, Float:height = 3.2, colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT)
 {
 	new barid = _bar_NewID(playerid);
 
