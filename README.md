@@ -1,6 +1,6 @@
 # progress2.inc
 
-![http://img.shields.io/badge/SA%3AMP-0.3z-green.svg](http://img.shields.io/badge/SA%3AMP-0.3z-green.svg)![http://img.shields.io/gittip/Southclaw.svg](http://img.shields.io/gittip/Southclaw.svg)![http://img.shields.io/github/issues/Southclaw/progress2.svg](http://img.shields.io/github/issues/Southclaw/progress2.svg)![http://img.shields.io/badge/download-GitHub-blue.svg](http://img.shields.io/badge/download-GitHub-blue.svg)
+![http://img.shields.io/badge/SA%3AMP-0.3z-green.svg](http://img.shields.io/badge/SA%3AMP-0.3z-green.svg)![http://img.shields.io/gittip/Southclaw.svg](http://img.shields.io/gittip/Southclaw.svg)
 
 Progress bar library v2.0.1
 
