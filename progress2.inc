@@ -30,7 +30,7 @@
 
 
 #define _progress2_included
-#define _progress2_version 0x201
+#define _progress2_version 0x203
 
 #define MAX_PLAYER_BARS             (MAX_PLAYER_TEXT_DRAWS / 3)
 #define INVALID_PLAYER_BAR_VALUE    (Float:0xFFFFFFFF)
