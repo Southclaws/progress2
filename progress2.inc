@@ -1,12 +1,12 @@
 /*==============================================================================
 
 
-	Progress Bar 2.0.2
+	Progress Bar 2.0.3
 
 		A SA:MP UI library for rendering progress bars used to visualise all
 		manner of data from health to a countdown timer.
 
-		Library originally written by Fl√°vio Toribio: flavio_toribio@hotmail.com
+		Library originally written by Fl·vio Toribio: flavio_toribio@hotmail.com
 		Now maintained by Southclaw in version 2+ with new features.
 
 
@@ -149,6 +149,9 @@ stock _bar_NewID(playerid)
 
 stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width = 55.5, Float:height = 3.2, colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT)
 {
+	if(!IsPlayerConnected(playerid))
+		return INVALID_PLAYER_BAR_ID;
+
 	new barid = _bar_NewID(playerid);
 
 	if(barid == -1)
@@ -267,23 +270,12 @@ stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width 
 
 stock DestroyPlayerProgressBar(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
-
-	pbar_Data[playerid][_:barid][pbar_posX] = 0.0;
-	pbar_Data[playerid][_:barid][pbar_posY] = 0.0;
-	pbar_Data[playerid][_:barid][pbar_width] = 0.0;
-	pbar_Data[playerid][_:barid][pbar_height] = 0.0;
-	pbar_Data[playerid][_:barid][pbar_maxValue] = 0.0;
-	pbar_Data[playerid][_:barid][pbar_progressValue] = 0.0;
-	pbar_Data[playerid][_:barid][pbar_colour] = 0;
 
 #if defined _Y_ITERATE_LOCAL_VERSION
 	Iter_Remove(pbar_Index[playerid], _:barid);
@@ -296,9 +288,6 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid)
 
 stock ShowPlayerProgressBar(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -311,9 +300,6 @@ stock ShowPlayerProgressBar(playerid, PlayerBar:barid)
 
 stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -386,8 +372,12 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 
 public OnPlayerDisconnect(playerid, reason)
 {
+#if defined _Y_ITERATE_LOCAL_VERSION
+	Iter_Clear(pbar_Index[playerid]);
+#else
 	for(new i; i < MAX_PLAYER_BARS; i++)
-		DestroyPlayerProgressBar(playerid, PlayerBar:i);
+		pbar_Valid[playerid][_:i] = false;
+#endif
 
 	#if defined ppb_OnPlayerDisconnect
 		return ppb_OnPlayerDisconnect(playerid, reason);
@@ -430,9 +420,6 @@ stock IsValidPlayerProgressBar(playerid, PlayerBar:barid)
 // pbar_posY
 stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -444,9 +431,6 @@ stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y)
 
 /*stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y)
 {
-	if(!IsPlayerConnected(playerid))
-		return false;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return false;
 
@@ -459,9 +443,6 @@ stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y)
 // pbar_width
 stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return INVALID_PLAYER_BAR_VALUE;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return INVALID_PLAYER_BAR_VALUE;
 
@@ -470,9 +451,6 @@ stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid)
 
 /*stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -486,9 +464,6 @@ stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid)
 // pbar_height
 stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return INVALID_PLAYER_BAR_VALUE;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return INVALID_PLAYER_BAR_VALUE;
 
@@ -497,9 +472,6 @@ stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid)
 
 /*stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -513,9 +485,6 @@ stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid)
 // pbar_colour
 stock GetPlayerProgressBarColour(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -524,9 +493,6 @@ stock GetPlayerProgressBarColour(playerid, PlayerBar:barid)
 
 stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -543,9 +509,6 @@ stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour)
 // pbar_maxValue
 stock Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return INVALID_PLAYER_BAR_VALUE;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return INVALID_PLAYER_BAR_VALUE;
 
@@ -554,9 +517,6 @@ stock Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid)
 
 stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -569,9 +529,6 @@ stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max)
 // pbar_progressValue
 stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -614,9 +571,6 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value)
 
 stock Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return INVALID_PLAYER_BAR_VALUE;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return INVALID_PLAYER_BAR_VALUE;
 
@@ -626,9 +580,6 @@ stock Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid)
 // pbar_direction
 stock GetPlayerProgressBarDirection(playerid, PlayerBar:barid)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
@@ -637,9 +588,6 @@ stock GetPlayerProgressBarDirection(playerid, PlayerBar:barid)
 /*
 stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction)
 {
-	if(!IsPlayerConnected(playerid))
-		return 0;
-
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
