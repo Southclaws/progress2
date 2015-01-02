@@ -9,7 +9,7 @@
 #define FILTERSCRIPT
 
 #include <a_samp>
-#include "../include/progress2.inc"
+#include <progress2>
 
 //------------------------------------------------------------------------------
 
