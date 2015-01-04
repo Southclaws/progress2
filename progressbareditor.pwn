@@ -15,7 +15,7 @@
 
 #define DIALOG_EDITOR		5356
 #define DIALOG_BAREDIT		5457
-#define DIALOG_CAPTION		"Progress Editor 0.2.1"
+#define DIALOG_CAPTION		"Progress Editor 0.2.2"
 #define DIALOG_INFO			"1.\tCreate a Bar\n2.\tEdit a bar\n3.\tDelete all bars\n4.\tExport all bars"
 #define DIALOG_BAR			"1.\tChange position\n2.\tChange size\n3.\tChange direction\n4.\tChange max value\n5.\tChange color\n6.\tDelete this bar\n7.\tExport this bar"
 
@@ -321,7 +321,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				case 4: // Bar color
 				{
 					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_MODE] = EDITING_COLOR;
-					ShowPlayerDialog(playerid, DIALOG_BAREDIT+2, DIALOG_STYLE_LIST, DIALOG_CAPTION, "1.\tWhite\n2.\tBlack\n3.\tBlue\n4.\tRed\n5.\tGreen\n6.\tYellow\n7.\tOrange\n8.\tPink\n9.\tPurple\n10.\tCustom (HEX)", "Select", "Back");
+					ShowPlayerDialog(playerid, DIALOG_BAREDIT+2, DIALOG_STYLE_LIST, DIALOG_CAPTION, "1.\tWhite\n2.\tGrey\n3.\tBlue\n4.\tRed\n5.\tGreen\n6.\tYellow\n7.\tOrange\n8.\tPink\n9.\tPurple\n10.\tCustom (HEX)", "Select", "Back");
 				}
 				case 5: // Delete this bar
 				{
@@ -432,14 +432,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			switch(listitem)
 			{
 				case 0: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xffffffff); // White
-				case 1: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0x191919ff); // Black
-				case 2: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0x4646eaff); // Blue
+				case 1: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xb4b4b4ff); // Grey
+				case 2: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0x00b9e8ff); // Blue
 				case 3: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xff0508ff); // Red
 				case 4: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0x46ea46ff); // Green
 				case 5: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xeaea46ff); // Yellow
 				case 6: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xff4a00ff); // Orange
-				case 7: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xea46eaff); // Pink
-				case 8: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0x612759ff); // Purple
+				case 7: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0xffc0cbff); // Pink
+				case 8: SetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], 0x800080ff); // Purple
 				case 9: // Custom (HEX)
 				{
 
