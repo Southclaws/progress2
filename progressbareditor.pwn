@@ -9,13 +9,13 @@
 #define FILTERSCRIPT
 
 #include <a_samp>
-#include "../include/progress2.inc"
+#include <progress2>
 
 //------------------------------------------------------------------------------
 
 #define DIALOG_EDITOR		5356
 #define DIALOG_BAREDIT		5457
-#define DIALOG_CAPTION		"Progress Editor 0.1"
+#define DIALOG_CAPTION		"Progress Editor 0.2"
 #define DIALOG_INFO			"1.\tCreate a Bar\n2.\tEdit a bar\n3.\tDelete all bars\n4.\tExport all bars"
 #define DIALOG_BAR			"1.\tChange position\n2.\tChange size\n3.\tChange direction\n4.\tChange max value\n5.\tChange color\n6.\tDelete this bar\n7.\tExport this bar"
 
