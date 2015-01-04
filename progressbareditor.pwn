@@ -15,7 +15,7 @@
 
 #define DIALOG_EDITOR		5356
 #define DIALOG_BAREDIT		5457
-#define DIALOG_CAPTION		"Progress Editor 0.2"
+#define DIALOG_CAPTION		"Progress Editor 0.2.1"
 #define DIALOG_INFO			"1.\tCreate a Bar\n2.\tEdit a bar\n3.\tDelete all bars\n4.\tExport all bars"
 #define DIALOG_BAR			"1.\tChange position\n2.\tChange size\n3.\tChange direction\n4.\tChange max value\n5.\tChange color\n6.\tDelete this bar\n7.\tExport this bar"
 
@@ -613,14 +613,16 @@ public OnPlayerUpdate(playerid)
 			if(ud == KEY_UP)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height-1, color, maxval, direction);
+				if(direction == BAR_DIRECTION_UP) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height+1, color, maxval, direction);
+				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height-1, color, maxval, direction);
 				SetPlayerProgressBarValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], floatdiv(GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]), 3));
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
 			else if(ud == KEY_DOWN)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height+1, color, maxval, direction);
+				if(direction == BAR_DIRECTION_UP) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height-1, color, maxval, direction);
+				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height+1, color, maxval, direction);
 				SetPlayerProgressBarValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], floatdiv(GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]), 3));
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
@@ -628,14 +630,16 @@ public OnPlayerUpdate(playerid)
 			if(lr == KEY_LEFT)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width-1, height, color, maxval, direction);
+				if(direction == BAR_DIRECTION_DOWN || direction == BAR_DIRECTION_UP || direction == BAR_DIRECTION_LEFT) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width+1, height, color, maxval, direction);
+				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width-1, height, color, maxval, direction);
 				SetPlayerProgressBarValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], floatdiv(GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]), 3));
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
 			else if(lr == KEY_RIGHT)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width+1, height, color, maxval, direction);
+				if(direction == BAR_DIRECTION_DOWN || direction == BAR_DIRECTION_UP || direction == BAR_DIRECTION_LEFT) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width-1, height, color, maxval, direction);
+				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width+1, height, color, maxval, direction);
 				SetPlayerProgressBarValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], floatdiv(GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]), 3));
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
