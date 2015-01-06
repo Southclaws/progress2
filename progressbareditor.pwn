@@ -15,7 +15,7 @@
 
 #define DIALOG_EDITOR		5356
 #define DIALOG_BAREDIT		5457
-#define DIALOG_CAPTION		"Progress Editor 0.2.2"
+#define DIALOG_CAPTION		"Progress Editor 0.2.3"
 #define DIALOG_INFO			"1.\tCreate a Bar\n2.\tEdit a bar\n3.\tDelete all bars\n4.\tExport all bars"
 #define DIALOG_BAR			"1.\tChange position\n2.\tChange size\n3.\tChange direction\n4.\tChange max value\n5.\tChange color\n6.\tDelete this bar\n7.\tExport this bar"
 
@@ -222,6 +222,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						new direction;
 						direction = GetPlayerProgressBarDirection(playerid, i);
 
+						new Float:maxval;
+						maxval = GetPlayerProgressBarMaxValue(playerid, i);
+
 						new directionName[32];
 						switch(direction)
 						{
@@ -233,7 +236,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						new textToSave[128];
 						new File:barFile = fopen("bars.txt", io_append);
-						format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %s);\n", X, Y, width, height, color, directionName);
+						format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %.2f, %s);\n", X, Y, width, height, color, maxval, directionName);
 						fwrite(barFile, textToSave);
 						fclose(barFile);
 					}
@@ -346,6 +349,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					new direction;
 					direction = GetPlayerProgressBarDirection(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 
+					new Float:maxval;
+					maxval = GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
+
 					new directionName[32];
 					switch(direction)
 					{
@@ -357,7 +363,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					new textToSave[128];
 					new File:barFile = fopen("bars.txt", io_append);
-					format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %s);\n", X, Y, width, height, color, directionName);
+					format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %s);\n", X, Y, width, height, color, maxval, directionName);
 					fwrite(barFile, textToSave);
 					fclose(barFile);
 
