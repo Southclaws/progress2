@@ -11,8 +11,6 @@
 #include <a_samp>
 #include <progress2>
 
-//------------------------------------------------------------------------------
-
 #define DIALOG_EDITOR		5356
 #define DIALOG_BAREDIT		5457
 #define DIALOG_CAPTION		"Progress Editor 0.1"
@@ -65,8 +63,6 @@ public OnFilterScriptInit()
 	return 1;
 }
 
-//------------------------------------------------------------------------------
-
 public OnFilterScriptExit()
 {
 	for(new i; i < MAX_PLAYERS; i++)
@@ -82,15 +78,11 @@ public OnFilterScriptExit()
 	return 1;
 }
 
-//------------------------------------------------------------------------------
-
 public OnPlayerSpawn(playerid)
 {
 	SendClientMessage(playerid, COLOR_INFO, "* {27612f}/progress{ffffff} to open the editor.");
 	return 1;
 }
-
-//------------------------------------------------------------------------------
 
 public OnPlayerCommandText(playerid, cmdtext[])
 {
@@ -106,8 +98,6 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	}
 	return 0;
 }
-
-//------------------------------------------------------------------------------
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
@@ -192,6 +182,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						new color;
 						color = GetPlayerProgressBarColour(playerid, i);
 
+						new Float:maxval;
+						maxval = GetPlayerProgressBarMaxValue(playerid, i);
+
 						new direction;
 						direction = GetPlayerProgressBarDirection(playerid, i);
 
@@ -206,7 +199,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						new textToSave[128];
 						new File:barFile = fopen("bars.txt", io_append);
-						format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %s);\n", X, Y, width, height, color, directionName);
+						format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %f, %s);\n", X, Y, width, height, color, maxval, directionName);
 						fwrite(barFile, textToSave);
 						fclose(barFile);
 					}
@@ -219,7 +212,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					else
 					{
 						PlayErrorSound(playerid);
-						SendClientMessage(playerid, COLOR_ERROR, "* No bars created!");	
+						SendClientMessage(playerid, COLOR_ERROR, "* No bars created!");
 						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
 					}
 					return 1;
@@ -311,6 +304,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					new direction;
 					direction = GetPlayerProgressBarDirection(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 
+					new Float:maxval;
+					maxval = GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
+
 					new directionName[32];
 					switch(direction)
 					{
@@ -322,7 +318,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					new textToSave[128];
 					new File:barFile = fopen("bars.txt", io_append);
-					format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %s);\n", X, Y, width, height, color, directionName);
+					format(textToSave, 256, "CreatePlayerProgressBar(playerid, %f, %f, %f, %f, %d, %f, %s);\n", X, Y, width, height, color, maxval, directionName);
 					fwrite(barFile, textToSave);
 					fclose(barFile);
 
@@ -369,11 +365,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new color;
 			color = GetPlayerProgressBarColour(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 
+			SetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], floatstr(inputtext));
+			new Float:maxval;
+			maxval = GetPlayerProgressBarMaxValue(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
+
 			new direction;
 			direction = GetPlayerProgressBarDirection(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 
 			DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-			gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, floatstr(inputtext), direction);
+			gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, direction);
 			ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 
 			ShowPlayerDialog(playerid, DIALOG_BAREDIT, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_BAR, "Select", "Back");
@@ -390,7 +390,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				ShowPlayerDialog(playerid, DIALOG_BAREDIT, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_BAR, "Select", "Back");
 				PlayCancelSound(playerid);
-				return 1;				
+				return 1;
 			}
 
 			switch(listitem)
@@ -445,7 +445,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				ShowPlayerDialog(playerid, DIALOG_BAREDIT, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_BAR, "Select", "Back");
 				PlayCancelSound(playerid);
-				return 1;				
+				return 1;
 			}
 
 			if(strlen(inputtext) != 8)
@@ -486,8 +486,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	return 0;
 }
 
-//------------------------------------------------------------------------------
-
 public OnPlayerUpdate(playerid)
 {
 	if(gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_MODE] == EDITING_NONE)
@@ -495,12 +493,12 @@ public OnPlayerUpdate(playerid)
 
 	new Keys, ud, lr;
 	GetPlayerKeys(playerid, Keys, ud, lr);
-	
+
 	switch(gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_MODE])
 	{
 		case EDITING_POSITION:
 		{
-			GameTextForPlayer(playerid, "~n~~n~~n~~n~~n~~n~~n~~n~~g~ARROWS ~w~TO MOVE, ~g~SPRINT ~w~TO BOOST, ~g~F ~w~TO FINISH", 1250, 3);
+			GameTextForPlayer(playerid, "~n~~n~~n~~n~~n~~n~~n~~n~~g~ARROWS ~w~TO MOVE, ~g~~k~~PED_SPRINT~ ~w~TO BOOST, ~g~~k~~VEHICLE_ENTER_EXIT~ ~w~TO FINISH", 1250, 3);
 
 			new Float:x, Float:y;
 			GetPlayerProgressBarPos(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], x, y);
@@ -532,7 +530,7 @@ public OnPlayerUpdate(playerid)
 				gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y+1, width, height, color, maxval, direction);
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
-		 
+
 			if(lr == KEY_LEFT)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
@@ -548,7 +546,7 @@ public OnPlayerUpdate(playerid)
 		}
 		case EDITING_SIZE:
 		{
-			GameTextForPlayer(playerid, "~n~~n~~n~~n~~n~~n~~n~~n~~g~ARROWS ~w~TO CHANGE, ~g~SPRINT ~w~TO BOOST, ~g~F ~w~TO FINISH", 1250, 3);
+			GameTextForPlayer(playerid, "~n~~n~~n~~n~~n~~n~~n~~n~~g~ARROWS ~w~TO CHANGE, ~g~~k~~PED_SPRINT~ ~w~TO BOOST, ~g~~k~~VEHICLE_ENTER_EXIT~ ~w~TO FINISH", 1250, 3);
 
 			new Float:x, Float:y;
 			GetPlayerProgressBarPos(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], x, y);
@@ -580,7 +578,7 @@ public OnPlayerUpdate(playerid)
 				gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height+1, color, maxval, direction);
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
-		 
+
 			if(lr == KEY_LEFT)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
@@ -596,7 +594,7 @@ public OnPlayerUpdate(playerid)
 		}
 		case EDITING_DIRECTION:
 		{
-			GameTextForPlayer(playerid, "~n~~n~~n~~n~~n~~n~~n~~n~~g~ARROWS ~w~TO CHANGE, ~g~F ~w~TO FINISH", 1250, 3);
+			GameTextForPlayer(playerid, "~n~~n~~n~~n~~n~~n~~n~~n~~g~ARROWS ~w~TO CHANGE, ~g~~k~~VEHICLE_ENTER_EXIT~ ~w~TO FINISH", 1250, 3);
 
 			new Float:x, Float:y;
 			GetPlayerProgressBarPos(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID], x, y);
@@ -619,38 +617,44 @@ public OnPlayerUpdate(playerid)
 			if(ud == KEY_UP)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				if(direction == BAR_DIRECTION_UP || direction == BAR_DIRECTION_DOWN) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_UP);
-				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_UP);
+				if(direction == BAR_DIRECTION_UP || direction == BAR_DIRECTION_DOWN)
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_UP);
+				else
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_UP);
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
 			else if(ud == KEY_DOWN)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				if(direction == BAR_DIRECTION_UP || direction == BAR_DIRECTION_DOWN) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_DOWN);
-				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_DOWN);
+				if(direction == BAR_DIRECTION_UP || direction == BAR_DIRECTION_DOWN)
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_DOWN);
+				else
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_DOWN);
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
-		 
+
 			if(lr == KEY_LEFT)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				if(direction == BAR_DIRECTION_LEFT || direction == BAR_DIRECTION_RIGHT) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_LEFT);
-				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_LEFT);
+				if(direction == BAR_DIRECTION_LEFT || direction == BAR_DIRECTION_RIGHT)
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_LEFT);
+				else
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_LEFT);
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
 			else if(lr == KEY_RIGHT)
 			{
 				DestroyPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
-				if(direction == BAR_DIRECTION_LEFT || direction == BAR_DIRECTION_RIGHT) gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_RIGHT);
-				else gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_RIGHT);
+				if(direction == BAR_DIRECTION_LEFT || direction == BAR_DIRECTION_RIGHT)
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, width, height, color, maxval, BAR_DIRECTION_RIGHT);
+				else
+					gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID] = CreatePlayerProgressBar(playerid, x, y, height, width, color, maxval, BAR_DIRECTION_RIGHT);
 				ShowPlayerProgressBar(playerid, gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]);
 			}
 		}
 	}
 	return 1;
 }
-
-//------------------------------------------------------------------------------
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
@@ -687,38 +691,23 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	return 1;
 }
 
-//------------------------------------------------------------------------------
-
 public OnPlayerConnect(playerid)
 {
 	ResetPlayerVars(playerid);
 	return 1;
 }
 
-//------------------------------------------------------------------------------
-
-public OnPlayerDisconnect(playerid, reason)
-{
-	ResetPlayerVars(playerid);
-	return 1;
-}
-
-//------------------------------------------------------------------------------
-
 ResetPlayerVars(playerid)
 {
-	gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_MODE]	= EDITING_NONE;	
-	gPlayerData[playerid][E_PE_PLAYER_IS_EDITING]		= false;	
+	gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_MODE]	= EDITING_NONE;
+	gPlayerData[playerid][E_PE_PLAYER_IS_EDITING]		= false;
 	gPlayerData[playerid][E_PE_PLAYER_BAR_EDITING_ID]	= INVALID_PLAYER_BAR_ID;
 }
 
-//------------------------------------------------------------------------------
-
 stock HexToInt(string[])
-{// Made by Dracoblue
-	new i = 0;
-	new cur = 1;
-	new res = 0;
+{
+	// Made by Dracoblue
+	new i = 0, cur = 1, res = 0;
 	for (i = strlen(string); i > 0; i--)
 	{
 		if (string[i-1] < 58) res = res + cur*(string[i-1] - 48); else res = res + cur*(string[i-1] - 65 + 10);
