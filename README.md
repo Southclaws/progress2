@@ -2,7 +2,7 @@
 
 ![http://img.shields.io/badge/SA%3AMP-0.3z-green.svg](http://img.shields.io/badge/SA%3AMP-0.3z-green.svg)![http://img.shields.io/gittip/Southclaw.svg](http://img.shields.io/gittip/Southclaw.svg)
 
-Progress bar library v2.0.3
+Progress bar library v2.1.0
 
 A SA:MP UI library for rendering progress bars used to visualise all manner of data from health to a countdown timer.
 
@@ -54,19 +54,19 @@ Now maintained by Southclaw in version 2+ with new features.
   Returns the on-screen position of the specified progress bar.
 
 - ```SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y)```:
-  *(NOTE: Function not written yet)*
+  Updates the position for a progress bar and re-renders it.
 
 - ```Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid)```:
   Returns the width of a progress bar.
 
 - ```SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width)```:
-  *(NOTE: Function not written yet)*
+  Updates the width of a progress bar and re-renders it.
 
 - ```Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid)```:
   Returns the height of a progress bar.
 
 - ```SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height)```:
-  *(NOTE: Function not written yet)*
+  Updates the height of a progress bar and re-renders it.
 
 - ```GetPlayerProgressBarColour(playerid, PlayerBar:barid)```:
   Returns the colour of a progress bar.
@@ -90,7 +90,13 @@ Now maintained by Southclaw in version 2+ with new features.
   Returns the direction of a progress bar.
 
 - ```SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction)```:
-  *(NOTE: Function not written yet)*
+  Updates the direction for a progress bar and re-renders it.
+
+
+## Internal
+
+- ```_RenderBar(playerid, barid)```:
+  Renders a valid bar on-screen using it's current properties. Called on creation and whenever position, width or height are updated.
 
 
 ## Hooked
