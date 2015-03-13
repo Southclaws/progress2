@@ -40,16 +40,22 @@ Test:PlayerProgressBar()
 
 	new Float:x, Float:y;
 	GetPlayerProgressBarPos(playerid, bar4, x, y);
-	//SetPlayerProgressBarPos(playerid, bar4, Float:x, Float:y);
 	ASSERT(x == 320.0 && y == 200.0);
+	SetPlayerProgressBarPos(playerid, bar4, 100.0, 250.0);
+	GetPlayerProgressBarPos(playerid, bar4, x, y);
+	ASSERT(x == 100.0 && y == 250.0);
 
 	new Float:width = GetPlayerProgressBarWidth(playerid, bar4);
-	//SetPlayerProgressBarWidth(playerid, bar4, Float:width);
 	ASSERT(width == 50.0);
+	SetPlayerProgressBarWidth(playerid, bar4, 75.0);
+	width = GetPlayerProgressBarWidth(playerid, bar4);
+	ASSERT(width == 75.0);
 
 	new Float:height = GetPlayerProgressBarHeight(playerid, bar4);
-	//SetPlayerProgressBarHeight(playerid, bar4, Float:height);
 	ASSERT(height == 10.0);
+	SetPlayerProgressBarHeight(playerid, bar4, 25.0);
+	height = GetPlayerProgressBarHeight(playerid, bar4);
+	ASSERT(height == 25.0);
 
 	new colour = GetPlayerProgressBarColour(playerid, bar4);
 	ASSERT(colour == 0xcfcaf1FF);
@@ -73,8 +79,10 @@ Test:PlayerProgressBar()
 	ASSERT(value == 44.4);
 
 	new direction = GetPlayerProgressBarDirection(playerid, bar4);
-	//SetPlayerProgressBarDirection(playerid, bar4, direction);
 	ASSERT(direction == BAR_DIRECTION_RIGHT);
+	SetPlayerProgressBarDirection(playerid, bar4, BAR_DIRECTION_UP);
+	direction = GetPlayerProgressBarDirection(playerid, bar4);
+	ASSERT(direction == BAR_DIRECTION_UP);
 }
 
 
@@ -154,6 +162,12 @@ public updatebar()
 	}
 }
 
+CMD:bars(playerid, params[])
+{
+	funtests();
+	return 1;
+}
+
 CMD:showbar(playerid, params[])
 {
 	ShowPlayerProgressBar(playerid, gBar[0]);
@@ -193,5 +207,22 @@ CMD:barc(playerid, params[])
 	new colour;
 	sscanf(params, "x", colour);
 	SetPlayerProgressBarColour(playerid, gBar[0], colour);
+	return 1;
+}
+
+CMD:barp(playerid, params[])
+{
+	new
+		Float:x,
+		Float:y,
+		Float:w,
+		Float:h;
+
+	sscanf(params, "ffff", x, y, w, h);
+
+	SetPlayerProgressBarPos(playerid, gBar[0], x, y);
+	SetPlayerProgressBarWidth(playerid, gBar[1], w);
+	SetPlayerProgressBarHeight(playerid, gBar[1], h);
+
 	return 1;
 }
