@@ -30,7 +30,7 @@
 
 
 #define _progress2_included
-#define _progress2_version 0x210
+#define _progress2_version 0x211
 
 #define MAX_PLAYER_BARS             (MAX_PLAYER_TEXT_DRAWS / 3)
 #define INVALID_PLAYER_BAR_VALUE    (Float:0xFFFFFFFF)
@@ -235,7 +235,7 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 ==============================================================================*/
 
 
-_RenderBar(playerid, barid)
+_RenderBar(playerid, barid, update = false)
 {
 	if(!IsPlayerConnected(playerid))
 		return false;
@@ -333,6 +333,9 @@ _RenderBar(playerid, barid)
 			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_colour]);
 		}
 	}
+
+	if(update)
+		ShowPlayerProgressBar(playerid, PlayerBar:barid);
 
 	return true;
 }
@@ -456,7 +459,7 @@ stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y)
 	pbar_Data[playerid][_:barid][pbar_posX] = x;
 	pbar_Data[playerid][_:barid][pbar_posY] = y;
 
-	_RenderBar(playerid, _:barid);
+	_RenderBar(playerid, _:barid, true);
 
 	return true;
 }
@@ -477,7 +480,7 @@ stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width)
 
 	pbar_Data[playerid][_:barid][pbar_width] = width;
 
-	_RenderBar(playerid, _:barid);
+	_RenderBar(playerid, _:barid, true);
 
 	return 1;
 }
@@ -498,7 +501,7 @@ stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height)
 
 	pbar_Data[playerid][_:barid][pbar_height] = height;
 
-	_RenderBar(playerid, _:barid);
+	_RenderBar(playerid, _:barid, true);
 
 	return 1;
 }
@@ -614,7 +617,7 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction)
 
 	pbar_Data[playerid][_:barid][pbar_direction] = direction;
 
-	_RenderBar(playerid, _:barid);
+	_RenderBar(playerid, _:barid, true);
 
 	return 1;
 }
