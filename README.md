@@ -2,7 +2,7 @@
 
 ![http://img.shields.io/badge/SA%3AMP-0.3z-green.svg](http://img.shields.io/badge/SA%3AMP-0.3z-green.svg)![http://img.shields.io/gittip/Southclaw.svg](http://img.shields.io/gittip/Southclaw.svg)
 
-Progress bar library v2.1.0
+Progress bar library v2.1.1
 
 A SA:MP UI library for rendering progress bars used to visualise all manner of data from health to a countdown timer.
 
