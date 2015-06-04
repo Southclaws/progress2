@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Progress Bar 2.0.4
+	Progress Bar 2.1.2
 
 		A SA:MP UI library for rendering progress bars used to visualise all
 		manner of data from health to a countdown timer.
