@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Progress Bar 2.1.2
+	Progress Bar 2.1.3
 
 		A SA:MP UI library for rendering progress bars used to visualise all
 		manner of data from health to a countdown timer.
@@ -60,6 +60,7 @@ enum
 
 enum E_BAR_DATA
 {
+bool:		pbar_show,
 Float:		pbar_posX,
 Float:		pbar_posY,
 Float:		pbar_width,
@@ -165,6 +166,7 @@ stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width 
 	pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
 	pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
 	pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_Data[playerid][barid][pbar_show] = false;
 	pbar_Data[playerid][barid][pbar_posX] = x;
 	pbar_Data[playerid][barid][pbar_posY] = y;
 	pbar_Data[playerid][barid][pbar_width] = width;
@@ -208,6 +210,8 @@ stock ShowPlayerProgressBar(playerid, PlayerBar:barid)
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
 
+	pbar_Data[playerid][_:barid][pbar_show] = true;
+
 	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
 	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
 	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
@@ -219,6 +223,8 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 {
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
+
+	pbar_Data[playerid][_:barid][pbar_show] = false;
 
 	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
 	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
@@ -235,7 +241,7 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 ==============================================================================*/
 
 
-_RenderBar(playerid, barid, update = false)
+_RenderBar(playerid, barid)
 {
 	if(!IsPlayerConnected(playerid))
 		return false;
@@ -334,7 +340,7 @@ _RenderBar(playerid, barid, update = false)
 		}
 	}
 
-	if(update)
+	if(pbar_Data[playerid][barid][pbar_show])
 		ShowPlayerProgressBar(playerid, PlayerBar:barid);
 
 	return true;
@@ -459,7 +465,7 @@ stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y)
 	pbar_Data[playerid][_:barid][pbar_posX] = x;
 	pbar_Data[playerid][_:barid][pbar_posY] = y;
 
-	_RenderBar(playerid, _:barid, true);
+	_RenderBar(playerid, _:barid);
 
 	return true;
 }
@@ -480,7 +486,7 @@ stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width)
 
 	pbar_Data[playerid][_:barid][pbar_width] = width;
 
-	_RenderBar(playerid, _:barid, true);
+	_RenderBar(playerid, _:barid);
 
 	return 1;
 }
@@ -501,7 +507,7 @@ stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height)
 
 	pbar_Data[playerid][_:barid][pbar_height] = height;
 
-	_RenderBar(playerid, _:barid, true);
+	_RenderBar(playerid, _:barid);
 
 	return 1;
 }
@@ -617,7 +623,7 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction)
 
 	pbar_Data[playerid][_:barid][pbar_direction] = direction;
 
-	_RenderBar(playerid, _:barid, true);
+	_RenderBar(playerid, _:barid);
 
 	return 1;
 }
