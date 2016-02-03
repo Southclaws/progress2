@@ -1,15 +1,9 @@
 /*==============================================================================
-
-
 	Progress Bar 2.1.3
-
 		A SA:MP UI library for rendering progress bars used to visualise all
 		manner of data from health to a countdown timer.
-
 		Library originally written by Flávio Toribio: flavio_toribio@hotmail.com
 		Now maintained by Southclaw in version 2+ with new features.
-
-
 ==============================================================================*/
 
 
@@ -44,9 +38,7 @@
 
 
 /*==============================================================================
-
 	Setup
-
 ==============================================================================*/
 
 
@@ -95,9 +87,7 @@ forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
 
 
 /*==============================================================================
-
 	Utils
-
 ==============================================================================*/
 
 
@@ -142,9 +132,7 @@ stock _bar_NewID(playerid)
 
 
 /*==============================================================================
-
 	Core
-
 ==============================================================================*/
 
 
@@ -185,6 +173,13 @@ stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width 
 	_RenderBar(playerid, barid);
 
 	return PlayerBar:barid;
+}
+
+stock DestroyAllPlayerProgressBar(playerid)
+{
+	for(new i = 0; i < MAX_PLAYER_BARS; i++)
+		DestroyPlayerProgressBar(playerid, PlayerBar:i);
+	return 1;
 }
 
 stock DestroyPlayerProgressBar(playerid, PlayerBar:barid)
@@ -235,9 +230,7 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 
 
 /*==============================================================================
-
 	Hooks and Internal
-
 ==============================================================================*/
 
 
@@ -365,7 +358,7 @@ _RenderBar(playerid, barid)
 		#else
 			#define _ALS_OnFilterScriptInit
 		#endif
-		 
+
 		#define OnFilterScriptInit ppb_OnFilterScriptInit
 		#if defined ppb_OnFilterScriptInit
 			forward ppb_OnFilterScriptInit();
@@ -388,7 +381,7 @@ _RenderBar(playerid, barid)
 		#else
 			#define _ALS_OnGameModeInit
 		#endif
-		 
+
 		#define OnGameModeInit ppb_OnGameModeInit
 		#if defined ppb_OnGameModeInit
 			forward ppb_OnGameModeInit();
@@ -397,6 +390,67 @@ _RenderBar(playerid, barid)
 	#endif
 
 #endif
+
+
+#if defined FILTERSCRIPT
+
+	public OnFilterScriptExit()
+	{
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+		    if(IsPlayerConnected(i))
+		        DestroyAllPlayerProgressBar(playerid);
+		}
+
+		#if defined ppb_OnFilterScriptExit
+			return ppb_OnFilterScriptExit();
+		#else
+			return 1;
+		#endif
+	}
+	#if defined _ALS_OnFilterScriptExit
+		#undef OnFilterScriptExit
+	#else
+		#define _ALS_OnFilterScriptExit
+	#endif
+
+	#define OnFilterScriptExit ppb_OnFilterScriptExit
+	#if defined ppb_OnFilterScriptExit
+		forward ppb_OnFilterScriptExit();
+	#endif
+
+#else
+
+	public OnGameModeExit()
+	{
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+		    if(IsPlayerConnected(i))
+		        DestroyAllPlayerProgressBar(i);
+		}
+
+		#if defined ppb_OnGameModeExit
+			return ppb_OnGameModeExit();
+		#else
+			return 1;
+		#endif
+	}
+	#if defined _ALS_OnGameModeExit
+		#undef OnGameModeExit
+	#else
+		#define _ALS_OnGameModeExit
+	#endif
+
+	#define OnGameModeExit ppb_OnGameModeExit
+	#if defined ppb_OnGameModeExit
+		forward ppb_OnGameModeExit();
+	#endif
+
+#endif
+
+
+
+
 
 public OnPlayerDisconnect(playerid, reason)
 {
@@ -418,7 +472,7 @@ public OnPlayerDisconnect(playerid, reason)
 #else
 	#define _ALS_OnPlayerDisconnect
 #endif
- 
+
 #define OnPlayerDisconnect ppb_OnPlayerDisconnect
 #if defined ppb_OnPlayerDisconnect
 	forward ppb_OnPlayerDisconnect(playerid, reason);
@@ -426,9 +480,7 @@ public OnPlayerDisconnect(playerid, reason)
 
 
 /*==============================================================================
-
 	Interface
-
 ==============================================================================*/
 
 
@@ -557,7 +609,7 @@ stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max)
 }
 
 // pbar_progressValue
-stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value)
+stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value, bool:show=true)
 {
 	if(!IsValidPlayerProgressBar(playerid, barid))
 		return 0;
@@ -594,7 +646,8 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value)
 		}
 	}
 
-	ShowPlayerProgressBar(playerid, barid);
+	if(show)
+		ShowPlayerProgressBar(playerid, barid);
 
 	return 1;
 }
@@ -627,4 +680,3 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction)
 
 	return 1;
 }
-
