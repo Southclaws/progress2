@@ -424,6 +424,70 @@ public OnPlayerDisconnect(playerid, reason)
 	forward ppb_OnPlayerDisconnect(playerid, reason);
 #endif
 
+#if defined FILTERSCRIPT
+
+	public OnFilterScriptExit()
+	{
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+			if(IsPlayerConnected(i))
+				DestroyAllPlayerProgressBars(playerid);
+		}
+
+		#if defined ppb_OnFilterScriptExit
+			return ppb_OnFilterScriptExit();
+		#else
+			return 1;
+		#endif
+	}
+	#if defined _ALS_OnFilterScriptExit
+		#undef OnFilterScriptExit
+	#else
+		#define _ALS_OnFilterScriptExit
+	#endif
+
+	#define OnFilterScriptExit ppb_OnFilterScriptExit
+	#if defined ppb_OnFilterScriptExit
+		forward ppb_OnFilterScriptExit();
+	#endif
+
+#else
+
+	public OnGameModeExit()
+	{
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+			if(IsPlayerConnected(i))
+				DestroyAllPlayerProgressBars(i);
+		}
+
+		#if defined ppb_OnGameModeExit
+			return ppb_OnGameModeExit();
+		#else
+			return 1;
+		#endif
+	}
+	#if defined _ALS_OnGameModeExit
+		#undef OnGameModeExit
+	#else
+		#define _ALS_OnGameModeExit
+	#endif
+
+	#define OnGameModeExit ppb_OnGameModeExit
+	#if defined ppb_OnGameModeExit
+		forward ppb_OnGameModeExit();
+	#endif
+
+#endif
+
+stock DestroyAllPlayerProgressBars(playerid)
+{
+	for(new i = 0; i < MAX_PLAYER_BARS; i++)
+		DestroyPlayerProgressBar(playerid, PlayerBar:i);
+
+	return 1;
+}
+
 
 /*==============================================================================
 
