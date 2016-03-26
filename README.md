@@ -12,11 +12,11 @@ Now maintained by Southclaw in version 2+ with new features.
 
 # Preview
 
-![http://puu.sh/byvSQ/c512d56383.gif](http://puu.sh/byvSQ/c512d56383.gif)
+![Bars 1](https://dl.dropboxusercontent.com/u/45512231/ShareX/bars.gif)
 
-![http://puu.sh/byxVW/f3d764d030.gif](http://puu.sh/byxVW/f3d764d030.gif)
+![Bars 2](https://dl.dropboxusercontent.com/u/45512231/ShareX/bars%20%281%29.gif)
 
-![http://puu.sh/byBqe/6bf0e4e57c.gif](http://puu.sh/byBqe/6bf0e4e57c.gif)
+![Bars 3](https://dl.dropboxusercontent.com/u/45512231/ShareX/bars%20%282%29.gif)
 
 
 # Resources
