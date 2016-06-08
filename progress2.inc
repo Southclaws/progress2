@@ -431,7 +431,7 @@ public OnPlayerDisconnect(playerid, reason)
 		for(new i = 0; i < MAX_PLAYERS; i++)
 		{
 			if(IsPlayerConnected(i))
-				DestroyAllPlayerProgressBars(playerid);
+				DestroyAllPlayerProgressBars(i);
 		}
 
 		#if defined ppb_OnFilterScriptExit
