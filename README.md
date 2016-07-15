@@ -1,6 +1,6 @@
 # progress2.inc
 
-![http://img.shields.io/badge/SA%3AMP-0.3z-green.svg](http://img.shields.io/badge/SA%3AMP-0.3z-green.svg)![http://img.shields.io/gittip/Southclaw.svg](http://img.shields.io/gittip/Southclaw.svg)
+![http://img.shields.io/badge/SA%3AMP-0.3z-green.svg](http://img.shields.io/badge/SA%3AMP-0.3z-green.svg)![http://img.shields.io/github/release/Southclaw/progress2.svg](http://img.shields.io/github/release/Southclaw/progress2.svg)
 
 Progress bar library v2.1.2
 
@@ -8,6 +8,12 @@ A SA:MP UI library for rendering progress bars used to visualise all manner of d
 
 Library originally written by Flávio Toribio: flavio_toribio@hotmail.com
 Now maintained by Southclaw in version 2+ with new features.
+
+
+## Progress Bar Editors for UI design:
+
+- Emmet_ ([Post](http://forum.sa-mp.com/showpost.php?p=3404492&postcount=103)) ([Pastebin](http://pastebin.com/esKhTeKf))
+- Pottus ([Post](http://forum.sa-mp.com/showpost.php?p=3406367&postcount=10)) ([Pastebin](http://pastebin.com/FNb2B8xf))
 
 
 # Preview
