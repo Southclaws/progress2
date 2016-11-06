@@ -241,7 +241,7 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid)
 ==============================================================================*/
 
 
-_RenderBar(playerid, barid)
+stock _RenderBar(playerid, barid)
 {
 	if(!IsPlayerConnected(playerid))
 		return false;
