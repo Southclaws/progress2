@@ -3,22 +3,6 @@
 #endif
 #define _progress2_included
 
-#if !defined MAX_PLAYER_BARS
-	#define MAX_PLAYER_BARS \
-		(MAX_PLAYER_TEXT_DRAWS / 3)
-#endif
-
-#if !defined MAX_BARS
-	#define MAX_BARS \
-		(MAX_TEXT_DRAWS / 3)
-#endif
-
-#define INVALID_BAR_ID \
-	(Bar:-1)
-
-#define INVALID_PLAYER_BAR_ID \
-	(PlayerBar:-1)
-
 #define BAR_DIRECTION_RIGHT \
 	0
 #define BAR_DIRECTION_LEFT \
@@ -48,10 +32,21 @@ enum PB_e_BAR
 	Float:PB_e_BAR_MAX_VALUE
 };
 
-static PB_eBar[Bar:MAX_BARS][PB_e_BAR];
-static Text:PB_txtBar[Bar:MAX_BARS][3];
-static bool:PB_bBarShownForPlayer[Bar:MAX_BARS][MAX_PLAYERS];
-static PB_iBarCount;
+/******************************
+*
+*
+*   PLAYER PROGRESS BARS
+*
+*
+******************************/
+
+#if !defined MAX_PLAYER_BARS
+	#define MAX_PLAYER_BARS \
+		(MAX_PLAYER_TEXT_DRAWS / 3)
+#endif
+
+#define INVALID_PLAYER_BAR_ID \
+	(PlayerBar:-1)
 
 static PB_ePlayerBar[MAX_PLAYERS][PlayerBar:MAX_PLAYER_BARS][PB_e_BAR];
 static PlayerText:PB_ptxtBar[MAX_PLAYERS][PlayerBar:MAX_PLAYER_BARS][3];
@@ -84,155 +79,6 @@ static Float:PB_GetBarPercent(Float:x, Float:widthorheight, Float:max, Float:val
 		}
 	}
 	return ret;
-}
-
-stock static PB_CreateBarBackground(Bar:barid)
-{
-	new direction = PB_eBar[barid][PB_e_BAR_DIRECTION],
-		Float:x = PB_eBar[barid][PB_e_BAR_X],
-	    Float:y = PB_eBar[barid][PB_e_BAR_Y],
-	    Float:width = PB_eBar[barid][PB_e_BAR_WIDTH],
-	    Float:height = PB_eBar[barid][PB_e_BAR_HEIGHT],
-	    bgcolor = PB_eBar[barid][PB_e_BAR_BACKGROUND_COLOR];
-
-    switch (direction)
-	{
-		case BAR_DIRECTION_RIGHT:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x + width) - 4.0), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, (height / 10));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
-		}
-
-		case BAR_DIRECTION_LEFT:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x - width) - 4.0), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, (height / 10));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
-		}
-
-		case BAR_DIRECTION_UP:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x - width) - 4.0), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, (-((height / 10) * 1.02) - 0.35));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
-		}
-
-		case BAR_DIRECTION_DOWN:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x - width) - 4.0), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, ((height / 10) - 0.35));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
-		}
-	}
-}
-
-stock static PB_CreateBarFill(Bar:barid)
-{
-	new direction = PB_eBar[barid][PB_e_BAR_DIRECTION],
-		Float:x = PB_eBar[barid][PB_e_BAR_X],
-	    Float:y = PB_eBar[barid][PB_e_BAR_Y],
-	    Float:width = PB_eBar[barid][PB_e_BAR_WIDTH],
-	    Float:height = PB_eBar[barid][PB_e_BAR_HEIGHT],
-	    color = PB_eBar[barid][PB_e_BAR_COLOR];
-
-    switch (direction)
-	{
-		case BAR_DIRECTION_RIGHT:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x + 1.2), (y + 2.15), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x + width) - 5.5), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, ((height / 10) - 0.35));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
-		}
-
-		case BAR_DIRECTION_LEFT:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x - 1.2), (y + 2.15), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x - width) - 2.5), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, ((height / 10) - 0.35));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
-		}
-
-		case BAR_DIRECTION_UP:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x - 1.2), (y - 1.0), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x - width) - 2.5), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, -((height / 10) - 1.02));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
-		}
-
-		case BAR_DIRECTION_DOWN:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x - 1.2), (y + 1.0), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x - width) - 2.5), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, ((height / 10) - 0.55));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
-		}
-	}
-}
-
-stock static PB_CreateBarMain(Bar:barid)
-{
-	new direction = PB_eBar[barid][PB_e_BAR_DIRECTION],
-		Float:x = PB_eBar[barid][PB_e_BAR_X],
-	    Float:y = PB_eBar[barid][PB_e_BAR_Y],
-	    Float:width = PB_eBar[barid][PB_e_BAR_WIDTH],
-	    Float:height = PB_eBar[barid][PB_e_BAR_HEIGHT],
-	    Float:value = PB_eBar[barid][PB_e_BAR_VALUE],
-	    Float:max_value = PB_eBar[barid][PB_e_BAR_MAX_VALUE],
-	    color = PB_eBar[barid][PB_e_BAR_COLOR];
-
-	switch (direction)
-	{
-		case BAR_DIRECTION_RIGHT:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x + 1.2), (y + 2.15), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], PB_GetBarPercent(x, width, max_value, value, direction), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, ((height / 10) - 0.35));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
-		}
-
-		case BAR_DIRECTION_LEFT:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x - 1.2), (y + 2.15), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], PB_GetBarPercent(x, width, max_value, value, direction), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, ((height / 10) - 0.35));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
-		}
-
-		case BAR_DIRECTION_UP:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x - 1.2), (y - 1.0), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], ((x - width) - 2.5), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, PB_GetBarPercent(x, width, max_value, value, direction));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
-		}
-
-		case BAR_DIRECTION_DOWN:
-		{
-			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x - 1.2), (y + 1.0), "_");
-			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
-			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], ((x - width) - 2.5), 0.0);
-			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, PB_GetBarPercent(x, width, max_value, value, direction));
-			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
-		}
-	}
 }
 
 stock static PB_CreatePlayerBarBackground(playerid, PlayerBar:barid)
@@ -394,7 +240,7 @@ stock PlayerBar:CreatePlayerProgressBar(playerid, Float:x, Float:y, Float:width 
 	    return INVALID_PLAYER_BAR_ID;
 	}
 
-	if (PB_iPlayerBarCount[playerid] == MAX_BARS)
+	if (PB_iPlayerBarCount[playerid] == MAX_PLAYER_BARS)
 	{
 	    return INVALID_PLAYER_BAR_ID;
 	}
@@ -921,6 +767,176 @@ stock CountPlayerProgressBars(playerid)
 	}
 
 	return PB_iBarCount;
+}
+
+/******************************
+*
+*
+*   GLOBAL PROGRESS BARS
+*
+*
+******************************/
+
+#if !defined MAX_BARS
+	#define MAX_BARS \
+		(MAX_TEXT_DRAWS / 3)
+#endif
+
+#define INVALID_BAR_ID \
+	(Bar:-1)
+
+static PB_eBar[Bar:MAX_BARS][PB_e_BAR];
+static Text:PB_txtBar[Bar:MAX_BARS][3];
+static bool:PB_bBarShownForPlayer[Bar:MAX_BARS][MAX_PLAYERS];
+static PB_iBarCount;
+
+stock static PB_CreateBarBackground(Bar:barid)
+{
+	new direction = PB_eBar[barid][PB_e_BAR_DIRECTION],
+		Float:x = PB_eBar[barid][PB_e_BAR_X],
+	    Float:y = PB_eBar[barid][PB_e_BAR_Y],
+	    Float:width = PB_eBar[barid][PB_e_BAR_WIDTH],
+	    Float:height = PB_eBar[barid][PB_e_BAR_HEIGHT],
+	    bgcolor = PB_eBar[barid][PB_e_BAR_BACKGROUND_COLOR];
+
+    switch (direction)
+	{
+		case BAR_DIRECTION_RIGHT:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x + width) - 4.0), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, (height / 10));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
+		}
+
+		case BAR_DIRECTION_LEFT:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x - width) - 4.0), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, (height / 10));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
+		}
+
+		case BAR_DIRECTION_UP:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x - width) - 4.0), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, (-((height / 10) * 1.02) - 0.35));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
+		}
+
+		case BAR_DIRECTION_DOWN:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND] = TextDrawCreate(x, y, "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], ((x - width) - 4.0), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], 1.0, ((height / 10) - 0.35));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
+		}
+	}
+}
+
+stock static PB_CreateBarFill(Bar:barid)
+{
+	new direction = PB_eBar[barid][PB_e_BAR_DIRECTION],
+		Float:x = PB_eBar[barid][PB_e_BAR_X],
+	    Float:y = PB_eBar[barid][PB_e_BAR_Y],
+	    Float:width = PB_eBar[barid][PB_e_BAR_WIDTH],
+	    Float:height = PB_eBar[barid][PB_e_BAR_HEIGHT],
+	    color = PB_eBar[barid][PB_e_BAR_COLOR];
+
+    switch (direction)
+	{
+		case BAR_DIRECTION_RIGHT:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x + 1.2), (y + 2.15), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x + width) - 5.5), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, ((height / 10) - 0.35));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
+		}
+
+		case BAR_DIRECTION_LEFT:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x - 1.2), (y + 2.15), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x - width) - 2.5), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, ((height / 10) - 0.35));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
+		}
+
+		case BAR_DIRECTION_UP:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x - 1.2), (y - 1.0), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x - width) - 2.5), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, -((height / 10) - 1.02));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
+		}
+
+		case BAR_DIRECTION_DOWN:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_FILL] = TextDrawCreate((x - 1.2), (y + 1.0), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((x - width) - 2.5), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_FILL], 1.0, ((height / 10) - 0.55));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_FILL], ((color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2))));
+		}
+	}
+}
+
+stock static PB_CreateBarMain(Bar:barid)
+{
+	new direction = PB_eBar[barid][PB_e_BAR_DIRECTION],
+		Float:x = PB_eBar[barid][PB_e_BAR_X],
+	    Float:y = PB_eBar[barid][PB_e_BAR_Y],
+	    Float:width = PB_eBar[barid][PB_e_BAR_WIDTH],
+	    Float:height = PB_eBar[barid][PB_e_BAR_HEIGHT],
+	    Float:value = PB_eBar[barid][PB_e_BAR_VALUE],
+	    Float:max_value = PB_eBar[barid][PB_e_BAR_MAX_VALUE],
+	    color = PB_eBar[barid][PB_e_BAR_COLOR];
+
+	switch (direction)
+	{
+		case BAR_DIRECTION_RIGHT:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x + 1.2), (y + 2.15), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], PB_GetBarPercent(x, width, max_value, value, direction), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, ((height / 10) - 0.35));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
+		}
+
+		case BAR_DIRECTION_LEFT:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x - 1.2), (y + 2.15), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], PB_GetBarPercent(x, width, max_value, value, direction), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, ((height / 10) - 0.35));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
+		}
+
+		case BAR_DIRECTION_UP:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x - 1.2), (y - 1.0), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], ((x - width) - 2.5), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, PB_GetBarPercent(x, width, max_value, value, direction));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
+		}
+
+		case BAR_DIRECTION_DOWN:
+		{
+			PB_txtBar[barid][BAR_TEXTDRAW_MAIN] = TextDrawCreate((x - 1.2), (y + 1.0), "_");
+			TextDrawUseBox(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1);
+			TextDrawTextSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], ((x - width) - 2.5), 0.0);
+			TextDrawLetterSize(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], 1.0, PB_GetBarPercent(x, width, max_value, value, direction));
+			TextDrawBoxColor(PB_txtBar[barid][BAR_TEXTDRAW_MAIN], color);
+		}
+	}
 }
 
 /*
