@@ -819,7 +819,7 @@ stock SetPlayerProgressBarBGColor(playerid, PlayerBar:barid, bgcolor)
 	}
 
     PB_ePlayerBar[playerid][barid][PB_e_BAR_BACKGROUND_COLOR] = bgcolor;
-    
+
 	PlayerTextDrawBoxColor(playerid, PB_ptxtBar[playerid][barid][BAR_TEXTDRAW_BACKGROUND], bgcolor);
 	if (PB_bPlayerBarShown[playerid][barid])
 	{
@@ -877,6 +877,10 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value)
 
 	PlayerTextDrawDestroy(playerid, PB_ptxtBar[playerid][barid][BAR_TEXTDRAW_MAIN]);
 	PB_CreatePlayerBarMain(playerid, barid);
+	if (PB_bPlayerBarShown[playerid][barid])
+	{
+		PlayerTextDrawShow(playerid, PB_ptxtBar[playerid][barid][BAR_TEXTDRAW_MAIN]);
+	}
 	return 1;
 }
 
@@ -899,6 +903,10 @@ stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:maxvalue)
 
 	PlayerTextDrawDestroy(playerid, PB_ptxtBar[playerid][barid][BAR_TEXTDRAW_MAIN]);
 	PB_CreatePlayerBarMain(playerid, barid);
+	if (PB_bPlayerBarShown[playerid][barid])
+	{
+		PlayerTextDrawShow(playerid, PB_ptxtBar[playerid][barid][BAR_TEXTDRAW_MAIN]);
+	}
 	return 1;
 }
 
@@ -1395,7 +1403,6 @@ stock SetProgressBarValue(Bar:barid, Float:value)
 
 	TextDrawDestroy(PB_txtBar[barid][BAR_TEXTDRAW_MAIN]);
 	PB_CreateBarMain(barid);
-
 	for (new i, j = GetPlayerPoolSize(); i <= j; i++)
 	{
 		if (IsPlayerConnected(i) && PB_bBarShownForPlayer[barid][i])
@@ -1420,7 +1427,6 @@ stock SetProgressBarMaxValue(Bar:barid, Float:maxvalue)
 
 	TextDrawDestroy(PB_txtBar[barid][BAR_TEXTDRAW_MAIN]);
 	PB_CreateBarMain(barid);
-
 	for (new i, j = GetPlayerPoolSize(); i <= j; i++)
 	{
 		if (IsPlayerConnected(i) && PB_bBarShownForPlayer[barid][i])
