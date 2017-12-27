@@ -96,15 +96,6 @@ Include in your code and begin using the library:
 * `OnPlayerDisconnect`:
   * To automatically destroy bars when a player disconnects.
 
-## Progress Bar Editors
-
-* Emmet\_:
-  * [Post](http://forum.sa-mp.com/showpost.php?p=3404492&postcount=103)
-  * [Pastebin](http://pastebin.com/esKhTeKf)
-* Pottus:
-  * [Post](http://forum.sa-mp.com/showpost.php?p=3406367&postcount=10)
-  * [Pastebin](http://pastebin.com/FNb2B8xf)
-
 ## Testing
 
 To test, simply run the package:
