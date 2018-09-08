@@ -11,9 +11,9 @@
 
 #include <a_samp>
 #include <logger>
-#include <YSI\y_iterate>
+#include <YSI_Data\y_iterate>
 
-#include <YSI\y_hooks>
+#include <YSI_Coding\y_hooks>
 
 
 #define MAX_PLAYER_BARS (MAX_PLAYER_TEXT_DRAWS / 3)
