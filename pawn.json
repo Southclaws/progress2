@@ -6,8 +6,7 @@
     "dependencies": [
         "Southclaws/samp-stdlib",
         "Southclaws/samp-logger",
-        "Zeex/amx_assembly",
-        "Misiur/YSI-Includes"
+        "pawn-lang/YSI-Includes"
     ],
     "dev_dependencies": [
         "Southclaws/ut_mock_players"
