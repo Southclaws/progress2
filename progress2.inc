@@ -10,11 +10,14 @@
 #define _progress2_included
 
 #include <a_samp>
-#include <logger>
-#include <YSI_Data\y_iterate>
 
-#include <YSI_Coding\y_hooks>
+#tryinclude <logger>
+#tryinclude <YSI_Data\y_iterate>
+#tryinclude <YSI_Coding\y_hooks>
 
+#if !defined _inc_y_iterate
+	#include <foreach>
+#endif
 
 #define MAX_PLAYER_BARS (_:MAX_PLAYER_TEXT_DRAWS / 3)
 #define INVALID_PLAYER_BAR_VALUE (Float:0xFFFFFFFF)
@@ -63,15 +66,25 @@ stock PlayerBar:CreatePlayerProgressBar(
 	colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT
 ) {
 	if(!IsPlayerConnected(playerid)) {
-		err("attempt to create player progress bar for invalid player",
-			_i("playerid", playerid));
+
+		#if defined _logger_included
+			err("attempt to create player progress bar for invalid player",
+				_i("playerid", playerid));
+		#else 
+			printf("attempt to create player progress bar for invalid player | playerid: %d", playerid);
+		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
 
 	new barid = Iter_Free(pbar_Index[playerid]);
 
 	if(barid == ITER_NONE) {
-		err("MAX_PLAYER_BARS limit reached.");
+
+		#if defined _logger_included
+			err("MAX_PLAYER_BARS limit reached.");
+		#else 
+			print("MAX_PLAYER_BARS limit reached.")
+		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
 
@@ -330,7 +343,7 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
 	Internal
 */
 
-_progress2_renderBar(playerid, barid)
+stock _progress2_renderBar(playerid, barid)
 {
 	if(!IsPlayerConnected(playerid)) {
 		return false;
@@ -430,20 +443,136 @@ _progress2_renderBar(playerid, barid)
 	return true;
 }
 
-hook OnScriptInit() {
-	Iter_Init(pbar_Index);
-}
-
-hook OnPlayerDisconnect(playerid, reason) {
-	Iter_Clear(pbar_Index[playerid]);
-}
-
-hook OnScriptExit() {
-	for(new i = 0; i < MAX_PLAYERS; i++) {
-		if(IsPlayerConnected(i))
-			DestroyAllPlayerProgressBars(i);
+#if defined _inc_y_hooks
+	hook OnScriptInit() {
+		Iter_Init(pbar_Index);
 	}
-}
+	hook OnPlayerDisconnect(playerid, reason) {
+		Iter_Clear(pbar_Index[playerid]);
+	}
+	hook OnScriptExit() {
+		for(new i = 0; i < MAX_PLAYERS; i++) {
+			if(IsPlayerConnected(i)) {
+				DestroyAllPlayerProgressBars(i);
+			}
+		}
+	}
+#else 
+	#if defined FILTERSCRIPT
+		public OnFilterScriptInit()
+		{
+			Iter_Init(pbar_Index);
+		#if    defined    pbar__OnFilterScriptInit
+			pbar__OnFilterScriptInit();
+		#endif
+			return 1;
+		}
+		#if    defined    _ALS_OnFilterScriptInit
+			#undef    OnFilterScriptInit
+		#else
+			#define    _ALS_OnFilterScriptInit
+		#endif
+		#define    OnFilterScriptInit    pbar__OnFilterScriptInit
+		#if    defined    pbar__OnFilterScriptInit
+			forward pbar__OnFilterScriptInit();
+		#endif 
+
+		// ===============================
+
+		public OnFilterScriptExit()
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) {
+				if(IsPlayerConnected(i)) {
+					DestroyAllPlayerProgressBars(i);
+				}
+			}
+		#if    defined    pbar__OnFilterScriptExit
+			pbar__OnFilterScriptExit();
+		#endif
+			return 1;
+		}
+		#if    defined    _ALS_OnFilterScriptExit
+			#undef    OnFilterScriptExit
+		#else
+			#define    _ALS_OnFilterScriptExit
+		#endif
+		#define    OnFilterScriptExit    pbar__OnFilterScriptExit
+		#if    defined    pbar__OnFilterScriptExit
+			forward pbar__OnFilterScriptExit();
+		#endif 
+	#else 
+		public OnGameModeExit()
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) {
+				if(IsPlayerConnected(i)) {
+					DestroyAllPlayerProgressBars(i);
+				}
+			}
+		#if    defined    pbar__OnGameModeExit
+			pbar__OnGameModeExit();
+		#endif
+			return 1;
+		}
+		#if    defined    _ALS_OnGameModeExit
+			#undef    OnGameModeExit
+		#else
+			#define    _ALS_OnGameModeExit
+		#endif
+		#define    OnGameModeExit    pbar__OnGameModeExit
+		#if    defined    pbar__OnGameModeExit
+			forward pbar__OnGameModeExit();
+		#endif 
+
+		public OnGameModeInit()
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) {
+				if(IsPlayerConnected(i)) {
+					DestroyAllPlayerProgressBars(i);
+				}
+			}
+		#if    defined    pbar__OnGameModeInit
+			pbar__OnGameModeInit();
+		#endif
+			return 1;
+		}
+		#if    defined    _ALS_OnGameModeInit
+			#undef    OnGameModeInit
+		#else
+			#define    _ALS_OnGameModeInit
+		#endif
+		#define    OnGameModeInit    pbar__OnGameModeInit
+		#if    defined    pbar__OnGameModeInit
+			forward pbar__OnGameModeInit();
+		#endif 
+	#endif
+
+
+	// ===============================
+
+	public OnPlayerDisconnect(playerid, reason)
+	{
+		Iter_Init(pbar_Index);
+	#if    defined    pbar__OnPlayerDisconnect
+		pbar__OnPlayerDisconnect(playerid, reason);
+	#endif
+		return 1;
+	}
+	#if    defined    _ALS_OnScriptInit
+		#undef    OnScriptInit
+	#else
+		#define    _ALS_OnScriptInit
+	#endif
+	#define    OnScriptInit    pbar__OnPlayerDisconnect
+	#if    defined    pbar__OnPlayerDisconnect
+		forward pbar__OnPlayerDisconnect(playerid, reason);
+	#endif 
+
+	// ===============================
+
+#endif
+
+
+
 
 stock DestroyAllPlayerProgressBars(playerid) {
 	for(new i = 0; i < MAX_PLAYER_BARS; i++) {
