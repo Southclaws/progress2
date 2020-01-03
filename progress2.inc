@@ -108,7 +108,7 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 	return 1;
 }
 
-stock bool:IsPlayerProgressBarVisible(playerid) return (pbar_Data[playerid][_:vehiclehpbar][pbar_show]);
+stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid) return (pbar_Data[playerid][barid][pbar_show]);
 stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
