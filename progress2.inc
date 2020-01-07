@@ -45,12 +45,10 @@ enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_main
 }
 
-static
-	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA],
-	pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
+static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
-new
-	Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>;
+new Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
+    pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
 
 forward PlayerBar:CreatePlayerProgressBar(
 	playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2,
@@ -109,6 +107,10 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 	return 1;
 }
 
+stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid)
+{
+   return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show]);
+}
 stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
