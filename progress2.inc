@@ -83,7 +83,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 		#if defined _logger_included
 			err("MAX_PLAYER_BARS limit reached.");
 		#else 
-			print("MAX_PLAYER_BARS limit reached.")
+			print("MAX_PLAYER_BARS limit reached.");
 		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
@@ -525,11 +525,7 @@ stock _progress2_renderBar(playerid, barid)
 
 		public OnGameModeInit()
 		{
-			for(new i = 0; i < MAX_PLAYERS; i++) {
-				if(IsPlayerConnected(i)) {
-					DestroyAllPlayerProgressBars(i);
-				}
-			}
+			Iter_Init(pbar_Index);
 		#if    defined    pbar__OnGameModeInit
 			pbar__OnGameModeInit();
 		#endif
