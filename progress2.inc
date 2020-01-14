@@ -11,9 +11,18 @@
 
 #include <a_samp>
 #include <logger>
-#include <YSI_Data\y_iterate>
-
-#include <YSI_Coding\y_hooks>
+#if !defined _INC_y_iterate
+   #tryinclude <YSI\YSI_Data\y_iterate>
+   #if !defined _INC_y_iterate
+      #error YSI Iterators library is required to run this script!
+   #endif
+#endif
+#if !defined _INC_y_hooks
+   #tryinclude <YSI\YSI_Coding\y_hooks>
+   #if !defined _INC_y_hooks
+      #error YSI Hooking library is required to run this script!
+   #endif
+#endif
 
 
 #define MAX_PLAYER_BARS (_:MAX_PLAYER_TEXT_DRAWS / 3)
