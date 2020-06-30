@@ -61,24 +61,15 @@ stock PlayerBar:CreatePlayerProgressBar(
 	colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT
 ) {
 	if(!IsPlayerConnected(playerid)) {
-		#if defined SAMP_LOGGER_COMPAT
-		err("attempt to create player progress bar for invalid player",
-			_i("playerid", playerid));
-		#else
 		Logger_Err("attempt to create player progress bar for invalid player",
 			Logger_I("playerid", playerid));
-		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
 
 	new barid = Iter_Free(pbar_Index[playerid]);
 
 	if(barid == ITER_NONE) {
-		#if defined SAMP_LOGGER_COMPAT
-		err("MAX_PLAYER_BARS limit reached.");
-		#else
 		Logger_Err("MAX_PLAYER_BARS limit reached.");
-		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
 
