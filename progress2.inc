@@ -9,25 +9,25 @@
 #endif
 #define _progress2_included
 
-#include <a_samp>
-#include <logger>
-#include <YSI_Data\y_iterate>
+#tryinclude <a_samp>
+#tryinclude <logger>
+#tryinclude <YSI_Data\y_iterate>
 
-#include <YSI_Coding\y_hooks>
+#tryinclude <YSI_Coding\y_hooks>
 
-
-#define MAX_PLAYER_BARS (_:MAX_PLAYER_TEXT_DRAWS / 3)
-#define INVALID_PLAYER_BAR_VALUE (Float:0xFFFFFFFF)
-#define INVALID_PLAYER_BAR_ID (PlayerBar:-1)
+#define MAX_PLAYER_BARS					(PlayerBar:(_:MAX_PLAYER_TEXT_DRAWS / 3))
+#define INVALID_PLAYER_BAR_VALUE		(Float:0xFFFFFFFF)
+#define INVALID_PLAYER_BAR_ID			(PlayerBar:-1)
 
 enum {
 	BAR_DIRECTION_RIGHT,
 	BAR_DIRECTION_LEFT,
 	BAR_DIRECTION_UP,
 	BAR_DIRECTION_DOWN
-}
+};
 
 enum E_BAR_DATA {
+	bool:is_created,
 	bool:pbar_show,
 	Float:pbar_posX,
 	Float:pbar_posY,
@@ -37,407 +37,452 @@ enum E_BAR_DATA {
 	Float:pbar_maxValue,
 	Float:pbar_progressValue,
 	pbar_direction
-}
+};
 
 enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_back,
 	PlayerText:pbar_fill,
 	PlayerText:pbar_main
+};
+
+static
+	#if defined _INC_y_iterate
+		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
+	#endif
+	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA],
+	pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW]
+;
+
+//	Reset module's arrays.
+stock ProgressBar_Reset() {
+	for(new playerid = 0; playerid < MAX_PLAYERS; ++playerid) {
+		PlayerBarUI_ResetPlayer(playerid);
+	}
 }
 
-static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
+//	Reset module's player-related array.
+stock PlayerBarUI_ResetPlayer(const playerid) {
+	for(new PlayerBar:barid = PlayerBar:0; barid < MAX_PLAYER_BARS; ++barid) {
+		pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
+		pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
+		pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
 
-new Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
-    pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
+		pbar_Data[playerid][barid][is_created] = false;
+	}
+}
+
+//	Returns free player progress bar.
+stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
+	for(new PlayerBar:barid = PlayerBar:0; barid < MAX_PLAYER_BARS; ++barid) {
+		if( !pbar_Data[playerid][barid][is_created] ) {
+			return barid;
+		}
+	}
+	return INVALID_PLAYER_BAR_ID;
+}
 
 forward PlayerBar:CreatePlayerProgressBar(
-	playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2,
-	colour = 0xFF1C1CFF, Float:max=100.0, direction=BAR_DIRECTION_RIGHT);
-forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
-forward Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction);
+	const playerid,
+	const Float:x, const Float:y,
+	const Float:width = 55.5, const Float:height = 3.2,
+	const colour = 0xFF1C1CFF,
+	const Float:max = 100.0,
+	const direction = BAR_DIRECTION_RIGHT
+);
+forward Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid);
+forward Float:_bar_percent(const Float:x, const Float:widthorheight, const Float:max, const Float:value, const direction);
 
 stock PlayerBar:CreatePlayerProgressBar(
-	playerid, Float:x, Float:y, Float:width = 55.5, Float:height = 3.2,
-	colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT
+	const playerid,
+	const Float:x, const Float:y,
+	const Float:width = 55.5, const Float:height = 3.2,
+	const colour = 0xFF1C1CFF,
+	const Float:max = 100.0,
+	const direction = BAR_DIRECTION_RIGHT
 ) {
 	if(!IsPlayerConnected(playerid)) {
+		#if(defined _logger_included)
 		Logger_Err("attempt to create player progress bar for invalid player",
 			Logger_I("playerid", playerid));
+		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
 
-	new barid = Iter_Free(pbar_Index[playerid]);
+	#if(defined _logger_included)
+	new PlayerBar:barid = PlayerBar:Iter_Free(pbar_Index[playerid]);
+	#else
+	new PlayerBar:barid = PlayerBarUI_FindFree(playerid);
+	#endif
+	if( barid != INVALID_PLAYER_BAR_ID ) {
+		pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
+		pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
+		pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
+		pbar_Data[playerid][barid][is_created] = true;
+		pbar_Data[playerid][barid][pbar_show] = false;
+		pbar_Data[playerid][barid][pbar_posX] = x;
+		pbar_Data[playerid][barid][pbar_posY] = y;
+		pbar_Data[playerid][barid][pbar_width] = width;
+		pbar_Data[playerid][barid][pbar_height] = height;
+		pbar_Data[playerid][barid][pbar_colour] = colour;
+		pbar_Data[playerid][barid][pbar_maxValue] = max;
+		pbar_Data[playerid][barid][pbar_progressValue] = 0.0;
+		pbar_Data[playerid][barid][pbar_direction] = direction;
 
-	if(barid == ITER_NONE) {
+		#if(defined _INC_y_iterate)
+		Iter_Add(pbar_Index[playerid], barid);
+		#endif
+		_progress2_renderBar(playerid, barid);
+	} else {
+		#if(defined _logger_included)
 		Logger_Err("MAX_PLAYER_BARS limit reached.");
-		return INVALID_PLAYER_BAR_ID;
+		#endif
 	}
-
-	pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
-	pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
-	pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
-	pbar_Data[playerid][barid][pbar_show] = false;
-	pbar_Data[playerid][barid][pbar_posX] = x;
-	pbar_Data[playerid][barid][pbar_posY] = y;
-	pbar_Data[playerid][barid][pbar_width] = width;
-	pbar_Data[playerid][barid][pbar_height] = height;
-	pbar_Data[playerid][barid][pbar_colour] = colour;
-	pbar_Data[playerid][barid][pbar_maxValue] = max;
-	pbar_Data[playerid][barid][pbar_progressValue] = 0.0;
-	pbar_Data[playerid][barid][pbar_direction] = direction;
-
-	Iter_Add(pbar_Index[playerid], barid);
-
-	_progress2_renderBar(playerid, barid);
-
-	return PlayerBar:barid;
+	return barid;
 }
 
-stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
-	}
 
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
-
-	Iter_Remove(pbar_Index[playerid], _:barid);
-
-	return 1;
-}
-
-stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid)
-{
-   return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show]);
-}
-stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
-	}
-
-	pbar_Data[playerid][_:barid][pbar_show] = true;
-
-	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
-	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
-	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
-
-	return 1;
-}
-
-stock HidePlayerProgressBar(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
-	}
-
-	pbar_Data[playerid][_:barid][pbar_show] = false;
-
-	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
-	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
-	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
-
-	return 1;
-}
-
-stock IsValidPlayerProgressBar(playerid, PlayerBar:barid) {
-	return Iter_Contains(pbar_Index[playerid], _:barid);
-}
-
-// pbar_posX
-// pbar_posY
-stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
-	}
-
-	x = pbar_Data[playerid][_:barid][pbar_posX];
-	y = pbar_Data[playerid][_:barid][pbar_posY];
-
-	return 1;
-}
-
-stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
+stock bool:IsValidPlayerProgressBar(const playerid, const PlayerBar:barid) {
+	#if(defined _INC_y_iterate)
+		return Iter_Contains(pbar_Index[playerid], _:barid);
+	#else
+		#pragma unused playerid
+		if( INVALID_PLAYER_BAR_ID < barid && barid < MAX_PLAYER_BARS ) {
+			return pbar_Data[playerid][barid][is_created];
+		}
 		return false;
+	#endif
+}
+
+//	Returns true if player progress bar shown.
+stock bool:IsPlayerProgressBarVisible(const playerid, const PlayerBar:barid) {
+	return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][barid][pbar_show]);
+}
+
+//	Destroy player progress bar and returns true on success.
+stock DestroyPlayerProgressBar(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
+		PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
+		PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
+		pbar_Data[playerid][barid][is_created] = false;
+		#if(defined _INC_y_iterate)
+		Iter_Remove(pbar_Index[playerid], _:barid);
+		#endif
+		return 1;
 	}
+	return 0;
+}
 
-	pbar_Data[playerid][_:barid][pbar_posX] = x;
-	pbar_Data[playerid][_:barid][pbar_posY] = y;
 
-	_progress2_renderBar(playerid, _:barid);
+stock ShowPlayerProgressBar(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_show] = true;
 
-	return true;
+		PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
+		PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
+		PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
+		return 1;
+	}
+	return 0;
+}
+
+stock HidePlayerProgressBar(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_show] = false;
+
+		PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
+		PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
+		PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
+		return 1;
+	}
+	return 0;
+}
+
+//	Returns player' progress bar position and true on success.
+stock GetPlayerProgressBarPos(const playerid, const PlayerBar:barid, &Float:x, &Float:y) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		x = pbar_Data[playerid][barid][pbar_posX];
+		y = pbar_Data[playerid][barid][pbar_posY];
+		return 1;
+	}
+	return 0;
+}
+
+stock SetPlayerProgressBarPos(const playerid, const PlayerBar:barid, const Float:x, const Float:y) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_posX] = x;
+		pbar_Data[playerid][barid][pbar_posY] = y;
+
+		_progress2_renderBar(playerid, barid);
+
+		return true;
+	}
+	return false;
 }
 
 // pbar_width
-stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return INVALID_PLAYER_BAR_VALUE;
+stock Float:GetPlayerProgressBarWidth(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		return pbar_Data[playerid][barid][pbar_width];
 	}
-
-	return pbar_Data[playerid][_:barid][pbar_width];
+	return INVALID_PLAYER_BAR_VALUE;
 }
 
-stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock SetPlayerProgressBarWidth(const playerid, const PlayerBar:barid, const Float:width) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_width] = width;
+
+		_progress2_renderBar(playerid, barid);
+
+		return 1;
 	}
-
-	pbar_Data[playerid][_:barid][pbar_width] = width;
-
-	_progress2_renderBar(playerid, _:barid);
-
-	return 1;
+	return 0;
 }
 
 // pbar_height
-stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return INVALID_PLAYER_BAR_VALUE;
+stock Float:GetPlayerProgressBarHeight(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		return pbar_Data[playerid][barid][pbar_height];
 	}
-
-	return pbar_Data[playerid][_:barid][pbar_height];
+	return INVALID_PLAYER_BAR_VALUE;
 }
 
-stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock SetPlayerProgressBarHeight(const playerid, const PlayerBar:barid, const Float:height) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_height] = height;
+
+		_progress2_renderBar(playerid, barid);
+
+		return 1;
 	}
-
-	pbar_Data[playerid][_:barid][pbar_height] = height;
-
-	_progress2_renderBar(playerid, _:barid);
-
-	return 1;
+	return 0;
 }
 
 // pbar_colour
-stock GetPlayerProgressBarColour(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock GetPlayerProgressBarColour(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		return pbar_Data[playerid][barid][pbar_colour];
 	}
-
-	return pbar_Data[playerid][_:barid][pbar_colour];
+	return 0;
 }
 
-stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock SetPlayerProgressBarColour(const playerid, const PlayerBar:barid, const colour) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_colour] = colour;
+
+		PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (colour & 0x000000FF));
+		PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (colour & 0xFFFFFF00) | (0x66 & ((colour & 0x000000FF) / 2)));
+		PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_main], colour);
+
+		return 1;
 	}
-
-	pbar_Data[playerid][_:barid][pbar_colour] = colour;
-
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][_:barid][pbar_back], 0x00000000 | (colour & 0x000000FF));
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill], (colour & 0xFFFFFF00) | (0x66 & ((colour & 0x000000FF) / 2)));
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][_:barid][pbar_main], colour);
-
-	return 1;
+	return 0;
 }
 
 // pbar_maxValue
-stock Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return INVALID_PLAYER_BAR_VALUE;
+stock Float:GetPlayerProgressBarMaxValue(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		return pbar_Data[playerid][barid][pbar_maxValue];
 	}
-
-	return pbar_Data[playerid][_:barid][pbar_maxValue];
+	return INVALID_PLAYER_BAR_VALUE;
 }
 
-stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock SetPlayerProgressBarMaxValue(const playerid, const PlayerBar:barid, const Float:max) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_maxValue] = max;
+		SetPlayerProgressBarValue(playerid, barid, pbar_Data[playerid][barid][pbar_progressValue]);
+
+		return 1;
 	}
-
-	pbar_Data[playerid][_:barid][pbar_maxValue] = max;
-	SetPlayerProgressBarValue(playerid, barid, pbar_Data[playerid][_:barid][pbar_progressValue]);
-
-	return 1;
+	return 0;
 }
 
 // pbar_progressValue
-stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
+stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:value) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return 0;
 	}
 
-	if(value < 0.0) {
+	new
+		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		direction = pbar_Data[playerid][barid][pbar_direction],
+		Float:boundry_size,
+		Float:adopted_size,
+		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
+	;
+	if( value < 0.0 ) {
 		value = 0.0;
-	} else {
-		if(value > pbar_Data[playerid][_:barid][pbar_maxValue]) {
-			value = pbar_Data[playerid][_:barid][pbar_maxValue];
-		}
+	} else if( value > max_value ) {
+		value = max_value;
 	}
+	if( direction == BAR_DIRECTION_RIGHT || direction == BAR_DIRECTION_LEFT ) {
+		boundry_size = pbar_Data[playerid][barid][pbar_width];
+	} else {
+		boundry_size = pbar_Data[playerid][barid][pbar_height];
+	}
+	adopted_size = _bar_percent(
+		pbar_Data[playerid][barid][pbar_posX],
+		boundry_size,
+		max_value,
+		value,
+		direction
+	);
 
-	PlayerTextDrawUseBox(playerid, pbar_TextDraw[playerid][_:barid][pbar_main], value > 0.0);
+	PlayerTextDrawUseBox(playerid, ptr_main, value > 0.0);
 
-	pbar_Data[playerid][_:barid][pbar_progressValue] = value;
+	pbar_Data[playerid][barid][pbar_progressValue] = value;
 
-	switch(pbar_Data[playerid][_:barid][pbar_direction]) {
+
+	switch(direction) {
 		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT: {
-			PlayerTextDrawTextSize(playerid, pbar_TextDraw[playerid][_:barid][pbar_main],
-				_bar_percent(
-					pbar_Data[playerid][_:barid][pbar_posX],
-					pbar_Data[playerid][_:barid][pbar_width],
-					pbar_Data[playerid][_:barid][pbar_maxValue],
-					value,
-					pbar_Data[playerid][_:barid][pbar_direction]), 0.0);
+			PlayerTextDrawTextSize(playerid, ptr_main, adopted_size, 0.0);
 		}
 		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN: {
-			PlayerTextDrawLetterSize(playerid, pbar_TextDraw[playerid][_:barid][pbar_main], 1.0,
-				_bar_percent(
-					pbar_Data[playerid][_:barid][pbar_posX],
-					pbar_Data[playerid][_:barid][pbar_height],
-					pbar_Data[playerid][_:barid][pbar_maxValue],
-					value,
-					pbar_Data[playerid][_:barid][pbar_direction]));
+			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0, adopted_size);
 		}
 	}
 
-	if(pbar_Data[playerid][_:barid][pbar_show]) {
+	if( pbar_Data[playerid][barid][pbar_show] ) {
 		ShowPlayerProgressBar(playerid, barid);
 	}
 
 	return 1;
 }
 
-stock Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return INVALID_PLAYER_BAR_VALUE;
+stock Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		return pbar_Data[playerid][barid][pbar_progressValue];
 	}
-
-	return pbar_Data[playerid][_:barid][pbar_progressValue];
+	return INVALID_PLAYER_BAR_VALUE;
 }
 
 // pbar_direction
-stock GetPlayerProgressBarDirection(playerid, PlayerBar:barid) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock GetPlayerProgressBarDirection(const playerid, const PlayerBar:barid) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		return pbar_Data[playerid][barid][pbar_direction];
 	}
-
-	return pbar_Data[playerid][_:barid][pbar_direction];
+	return 0;
 }
 
-stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
-	if(!IsValidPlayerProgressBar(playerid, barid)) {
-		return 0;
+stock SetPlayerProgressBarDirection(const playerid, const PlayerBar:barid, const direction) {
+	if( IsValidPlayerProgressBar(playerid, barid) ) {
+		pbar_Data[playerid][barid][pbar_direction] = direction;
+		_progress2_renderBar(playerid, barid);
+
+		return 1;
 	}
-
-	pbar_Data[playerid][_:barid][pbar_direction] = direction;
-	_progress2_renderBar(playerid, _:barid);
-
-	return 1;
+	return 0;
 }
 
 /*
 	Internal
 */
 
-_progress2_renderBar(playerid, barid)
-{
-	if(!IsPlayerConnected(playerid)) {
+stock _progress2_renderBar(const playerid, const PlayerBar:barid) {
+	if( !IsPlayerConnected(playerid) ) {
 		return false;
 	}
 
-	if(!IsValidPlayerProgressBar(playerid, PlayerBar:barid)) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return false;
 	}
 
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
-
-	switch(pbar_Data[playerid][barid][pbar_direction]) {
+	new
+		Float:pos_x,
+		Float:pos_y,
+		Float:width = pbar_Data[playerid][barid][pbar_width],
+		Float:height = pbar_Data[playerid][barid][pbar_height],
+		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
+		direction = pbar_Data[playerid][barid][pbar_direction],
+		color = pbar_Data[playerid][barid][pbar_colour],
+		PlayerText:ptd_back,
+		PlayerText:ptd_fill,
+		PlayerText:ptd_main
+	;
+	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
+	ptd_back = CreatePlayerTextDraw(playerid, pos_x, pos_y, "_");
+	switch(direction) {
 		case BAR_DIRECTION_RIGHT: {
-			pbar_TextDraw[playerid][barid][pbar_back] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX], pbar_Data[playerid][barid][pbar_posY], "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_back], pbar_Data[playerid][barid][pbar_posX] + pbar_Data[playerid][barid][pbar_width] - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1.0, pbar_Data[playerid][barid][pbar_height] / 10);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
+			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x + width - 4.0, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
 
-			pbar_TextDraw[playerid][barid][pbar_fill] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] + 1.2, pbar_Data[playerid][barid][pbar_posY] + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], pbar_Data[playerid][barid][pbar_posX] + pbar_Data[playerid][barid][pbar_width] - 5.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1.0, pbar_Data[playerid][barid][pbar_height] / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (pbar_Data[playerid][barid][pbar_colour] & 0xFFFFFF00) | (0x66 & ((pbar_Data[playerid][barid][pbar_colour] & 0x000000FF) / 2)));
+			ptd_fill = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x + width - 5.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10.0 - 0.35);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] + 1.2, pbar_Data[playerid][barid][pbar_posY] + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], _bar_percent(pbar_Data[playerid][barid][pbar_posX], pbar_Data[playerid][barid][pbar_width], pbar_Data[playerid][barid][pbar_maxValue], pbar_Data[playerid][barid][pbar_progressValue], pbar_Data[playerid][barid][pbar_direction]), 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, pbar_Data[playerid][barid][pbar_height] / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_colour]);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_main, _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, height / 10.0 - 0.35);
 		}
 		case BAR_DIRECTION_LEFT: {
-			pbar_TextDraw[playerid][barid][pbar_back] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX], pbar_Data[playerid][barid][pbar_posY], "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_back], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1.0, pbar_Data[playerid][barid][pbar_height] / 10);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
+			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
 
-			pbar_TextDraw[playerid][barid][pbar_fill] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] - 1.2, pbar_Data[playerid][barid][pbar_posY] + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1.0, pbar_Data[playerid][barid][pbar_height] / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (pbar_Data[playerid][barid][pbar_colour] & 0xFFFFFF00) | (0x66 & ((pbar_Data[playerid][barid][pbar_colour] & 0x000000FF) / 2)));
+			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10.0 - 0.35);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] - 1.2, pbar_Data[playerid][barid][pbar_posY] + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], _bar_percent(pbar_Data[playerid][barid][pbar_posX], pbar_Data[playerid][barid][pbar_width], pbar_Data[playerid][barid][pbar_maxValue], pbar_Data[playerid][barid][pbar_progressValue], pbar_Data[playerid][barid][pbar_direction]), 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, pbar_Data[playerid][barid][pbar_height] / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_colour]);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_main, _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, height / 10.0 - 0.35);
 		}
 		case BAR_DIRECTION_UP: {
-			pbar_TextDraw[playerid][barid][pbar_back] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX], pbar_Data[playerid][barid][pbar_posY], "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_back], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1.0, -((pbar_Data[playerid][barid][pbar_height] / 10) * 1.02) -0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
+			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, -((height / 10.0) * 1.02) -0.35);
 
-			pbar_TextDraw[playerid][barid][pbar_fill] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] - 1.2, pbar_Data[playerid][barid][pbar_posY] - 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1.0, -(pbar_Data[playerid][barid][pbar_height] / 10.0) * 1.02);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (pbar_Data[playerid][barid][pbar_colour] & 0xFFFFFF00) | (0x66 & ((pbar_Data[playerid][barid][pbar_colour] & 0x000000FF) / 2)));
+			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, -(height / 10.0) * 1.02);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] - 1.2, pbar_Data[playerid][barid][pbar_posY] - 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, _bar_percent(pbar_Data[playerid][_:barid][pbar_posX], pbar_Data[playerid][_:barid][pbar_height], pbar_Data[playerid][_:barid][pbar_maxValue], pbar_Data[playerid][barid][pbar_progressValue], pbar_Data[playerid][barid][pbar_direction]));
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_colour]);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_main, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
 		}
 		case BAR_DIRECTION_DOWN: {
-			pbar_TextDraw[playerid][barid][pbar_back] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX], pbar_Data[playerid][barid][pbar_posY], "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_back], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_back], 1.0, ((pbar_Data[playerid][barid][pbar_height] / 10)) -0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
+			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, ((height / 10)) -0.35);
 
-			pbar_TextDraw[playerid][barid][pbar_fill] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] - 1.2, pbar_Data[playerid][barid][pbar_posY] + 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1.0, (pbar_Data[playerid][barid][pbar_height] / 10.0) - 0.55);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (pbar_Data[playerid][barid][pbar_colour] & 0xFFFFFF00) | (0x66 & ((pbar_Data[playerid][barid][pbar_colour] & 0x000000FF) / 2)));
+			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, (height / 10.0) - 0.55);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pbar_Data[playerid][barid][pbar_posX] - 1.2, pbar_Data[playerid][barid][pbar_posY] + 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_posX] - pbar_Data[playerid][barid][pbar_width] - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, _bar_percent(pbar_Data[playerid][_:barid][pbar_posX], pbar_Data[playerid][_:barid][pbar_height], pbar_Data[playerid][_:barid][pbar_maxValue], pbar_Data[playerid][barid][pbar_progressValue], pbar_Data[playerid][barid][pbar_direction]));
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pbar_Data[playerid][barid][pbar_colour]);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
+			PlayerTextDrawTextSize		(playerid, ptd_main, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
 		}
 	}
+	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
+	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
+	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
+	PlayerTextDrawBoxColor		(playerid, ptd_back, (color & 0x000000FF));
+	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
+	PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
+	PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
+	PlayerTextDrawBoxColor		(playerid, ptd_main, color);
+	PlayerTextDrawUseBox		(playerid, ptd_main, 1);
 
-	if(pbar_Data[playerid][barid][pbar_show]) {
-		ShowPlayerProgressBar(playerid, PlayerBar:barid);
+	if( pbar_Data[playerid][barid][pbar_show] ) {
+		ShowPlayerProgressBar(playerid, barid);
 	}
 
 	return true;
 }
 
+#if(defined _INC_y_hooks)
 hook OnScriptInit() {
+	#if(defined _INC_y_iterate)
 	Iter_Init(pbar_Index);
+	#endif
 }
 
 hook OnPlayerDisconnect(playerid, reason) {
+	#if(defined _INC_y_iterate)
 	Iter_Clear(pbar_Index[playerid]);
+	#endif
 }
 
 hook OnScriptExit() {
@@ -446,16 +491,17 @@ hook OnScriptExit() {
 			DestroyAllPlayerProgressBars(i);
 	}
 }
+#endif
 
-stock DestroyAllPlayerProgressBars(playerid) {
-	for(new i = 0; i < MAX_PLAYER_BARS; i++) {
-		DestroyPlayerProgressBar(playerid, PlayerBar:i);
+stock DestroyAllPlayerProgressBars(const playerid) {
+	for(new PlayerBar:i = 0; i < MAX_PLAYER_BARS; i++) {
+		DestroyPlayerProgressBar(playerid, i);
 	}
 
 	return 1;
 }
 
-stock Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction) {
+stock Float:_bar_percent(const Float:x, const Float:widthorheight, const Float:max, const Float:value, const direction) {
 	new Float:result;
 
 	switch(direction) {
