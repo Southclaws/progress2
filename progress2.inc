@@ -452,8 +452,9 @@ hook OnPlayerDisconnect(playerid, reason) {
 
 hook OnScriptExit() {
 	for(new i = 0; i < MAX_PLAYERS; i++) {
-		if(IsPlayerConnected(i))
+		if( IsPlayerConnected(i) ) {
 			DestroyAllPlayerProgressBars(i);
+		}
 	}
 }
 
