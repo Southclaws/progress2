@@ -435,11 +435,11 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x + width - 5.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10 - 0.35);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, height / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], color);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
+			PlayerTextDrawUseBox		(playerid, ptd_main, 1);
+			PlayerTextDrawTextSize		(playerid, ptd_main, _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, height / 10 - 0.35);
+			PlayerTextDrawBoxColor		(playerid, ptd_main, color);
 		}
 		case BAR_DIRECTION_LEFT: {
 			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
@@ -449,11 +449,11 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10 - 0.35);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, height / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], color);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
+			PlayerTextDrawUseBox		(playerid, ptd_main, 1);
+			PlayerTextDrawTextSize		(playerid, ptd_main, _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, height / 10 - 0.35);
+			PlayerTextDrawBoxColor		(playerid, ptd_main, color);
 		}
 		case BAR_DIRECTION_UP: {
 			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
@@ -463,11 +463,11 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, -(height / 10.0) * 1.02);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], color);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
+			PlayerTextDrawUseBox		(playerid, ptd_main, 1);
+			PlayerTextDrawTextSize		(playerid, ptd_main, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
+			PlayerTextDrawBoxColor		(playerid, ptd_main, color);
 		}
 		case BAR_DIRECTION_DOWN: {
 			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
@@ -477,16 +477,16 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, (height / 10.0) - 0.55);
 
-			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1);
-			PlayerTextDrawTextSize		(playerid, pbar_TextDraw[playerid][barid][pbar_main], pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
-			PlayerTextDrawBoxColor		(playerid, pbar_TextDraw[playerid][barid][pbar_main], color);
+			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
+			PlayerTextDrawUseBox		(playerid, ptd_main, 1);
+			PlayerTextDrawTextSize		(playerid, ptd_main, pos_x - width - 2.5, 0.0);
+			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
+			PlayerTextDrawBoxColor		(playerid, ptd_main, color);
 		}
 	}
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
 	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
-
+	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 	PlayerTextDrawBoxColor		(playerid, ptd_back, 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
 	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
 	PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
