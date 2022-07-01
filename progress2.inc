@@ -327,6 +327,9 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		return 0;
 	}
 
+	new
+		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
+	;
 	if( value < 0.0 ) {
 		value = 0.0;
 	} else {
@@ -335,13 +338,13 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		}
 	}
 
-	PlayerTextDrawUseBox(playerid, pbar_TextDraw[playerid][barid][pbar_main], value > 0.0);
+	PlayerTextDrawUseBox(playerid, ptr_main, value > 0.0);
 
 	pbar_Data[playerid][barid][pbar_progressValue] = value;
 
 	switch(pbar_Data[playerid][barid][pbar_direction]) {
 		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT: {
-			PlayerTextDrawTextSize(playerid, pbar_TextDraw[playerid][barid][pbar_main],
+			PlayerTextDrawTextSize(playerid, ptr_main,
 				_bar_percent(
 					pbar_Data[playerid][barid][pbar_posX],
 					pbar_Data[playerid][barid][pbar_width],
@@ -350,7 +353,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 					pbar_Data[playerid][barid][pbar_direction]), 0.0);
 		}
 		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN: {
-			PlayerTextDrawLetterSize(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0,
+			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0,
 				_bar_percent(
 					pbar_Data[playerid][barid][pbar_posX],
 					pbar_Data[playerid][barid][pbar_height],
