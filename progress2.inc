@@ -13,7 +13,7 @@
 #tryinclude <logger>
 #tryinclude <YSI_Data\y_iterate>
 
-#include <YSI_Coding\y_hooks>
+#tryinclude <YSI_Coding\y_hooks>
 
 
 #define MAX_PLAYER_BARS (_:MAX_PLAYER_TEXT_DRAWS / 3)
@@ -469,6 +469,7 @@ _progress2_renderBar(playerid, barid)
 	return true;
 }
 
+#if(defined __INC_y_hooks)
 hook OnScriptInit() {
 	#if(defined _INC_y_iterate)
 	Iter_Init(pbar_Index);
@@ -495,6 +496,7 @@ stock DestroyAllPlayerProgressBars(playerid) {
 
 	return 1;
 }
+#endif
 
 stock Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction) {
 	new Float:result;
