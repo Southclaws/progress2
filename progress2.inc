@@ -50,6 +50,27 @@ static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 new Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
 
+//	Reset info of player progress bar.
+stock PlayerBarUI_ResetPlayerItem(const playerid, const PlayerBar:barid) {
+	pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_Data[playerid][barid][is_created] = false;
+}
+
+//	Reset info of all bars for one player.
+stock PlayerBarUI_ResetPlayer(const playerid) {
+	for(new PlayerBar:barid = PlayerBar:0; barid < MAX_PLAYER_BARS; ++barid) {
+		PlayerBarUI_ResetPlayerItem(playerid, barid);
+	}
+}
+//	Reset all bars for all players.
+stock PlayerBarUI_ResetAll() {
+	for(new playerid = 0; playerid < MAX_PLAYERS; ++playerid) {
+		PlayerBarUI_ResetPlayer(playerid);
+	}
+}
+
 forward PlayerBar:CreatePlayerProgressBar(
 	playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2,
 	colour = 0xFF1C1CFF, Float:max=100.0, direction=BAR_DIRECTION_RIGHT);
