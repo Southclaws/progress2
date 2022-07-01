@@ -113,7 +113,7 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 
 stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid)
 {
-   return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show]);
+	return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show]);
 }
 stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
