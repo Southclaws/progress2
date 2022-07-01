@@ -336,10 +336,8 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	;
 	if( value < 0.0 ) {
 		value = 0.0;
-	} else {
-		if( value > max_value ) {
-			value = max_value;
-		}
+	} else if( value > max_value ) {
+		value = max_value;
 	}
 	if( direction == BAR_DIRECTION_RIGHT || direction == BAR_DIRECTION_LEFT ) {
 		boundry_size = pbar_Data[playerid][barid][pbar_width];
