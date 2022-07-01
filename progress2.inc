@@ -266,6 +266,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 
 	new
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		Float:boundry_size,
 		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
 	if( value < 0.0 ) {
@@ -274,6 +275,11 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 		if( value > max_value ) {
 			value = max_value;
 		}
+	}
+	if( direction == BAR_DIRECTION_RIGHT || direction == BAR_DIRECTION_LEFT ) {
+		boundry_size = pbar_Data[playerid][barid][pbar_width];
+	} else {
+		boundry_size = pbar_Data[playerid][barid][pbar_height];
 	}
 
 	PlayerTextDrawUseBox(playerid, ptr_main, value > 0.0);
@@ -285,7 +291,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 			PlayerTextDrawTextSize(playerid, ptr_main,
 				_bar_percent(
 					pbar_Data[playerid][_:barid][pbar_posX],
-					pbar_Data[playerid][_:barid][pbar_width],
+					boundry_size,
 					max_value,
 					value,
 					pbar_Data[playerid][_:barid][pbar_direction]), 0.0);
@@ -294,7 +300,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0,
 				_bar_percent(
 					pbar_Data[playerid][_:barid][pbar_posX],
-					pbar_Data[playerid][_:barid][pbar_height],
+					boundry_size,
 					max_value,
 					value,
 					pbar_Data[playerid][_:barid][pbar_direction]));
