@@ -49,7 +49,7 @@ enum E_BAR_TEXT_DRAW {
 static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
 new
-	if(defined _INC_y_iterate)
+	#if(defined _INC_y_iterate)
 		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
 	#endif
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
