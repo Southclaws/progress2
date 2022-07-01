@@ -52,7 +52,8 @@ new
 	if(defined _INC_y_iterate)
 		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
 	#endif
-    pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
+	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA]
+;
 
 //	Returns free player progress bar.
 stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
