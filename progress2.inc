@@ -265,13 +265,14 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 	}
 
 	new
+		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
 	if( value < 0.0 ) {
 		value = 0.0;
 	} else {
-		if(value > pbar_Data[playerid][_:barid][pbar_maxValue]) {
-			value = pbar_Data[playerid][_:barid][pbar_maxValue];
+		if( value > max_value ) {
+			value = max_value;
 		}
 	}
 
@@ -285,7 +286,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 				_bar_percent(
 					pbar_Data[playerid][_:barid][pbar_posX],
 					pbar_Data[playerid][_:barid][pbar_width],
-					pbar_Data[playerid][_:barid][pbar_maxValue],
+					max_value,
 					value,
 					pbar_Data[playerid][_:barid][pbar_direction]), 0.0);
 		}
@@ -294,7 +295,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 				_bar_percent(
 					pbar_Data[playerid][_:barid][pbar_posX],
 					pbar_Data[playerid][_:barid][pbar_height],
-					pbar_Data[playerid][_:barid][pbar_maxValue],
+					max_value,
 					value,
 					pbar_Data[playerid][_:barid][pbar_direction]));
 		}
