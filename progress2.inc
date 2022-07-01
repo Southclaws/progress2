@@ -147,8 +147,7 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 	return 1;
 }
 
-stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid)
-{
+stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid) {
 	return ( IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show] );
 }
 stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
@@ -379,8 +378,7 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
 	Internal
 */
 
-_progress2_renderBar(playerid, barid)
-{
+_progress2_renderBar(playerid, barid) {
 	if( !IsPlayerConnected(playerid) ) {
 		return false;
 	}
