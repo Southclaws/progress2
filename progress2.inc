@@ -378,12 +378,12 @@ stock SetPlayerProgressBarDirection(const playerid, const PlayerBar:barid, const
 	Internal
 */
 
-_progress2_renderBar(const playerid, const barid) {
+_progress2_renderBar(const playerid, const PlayerBar:barid) {
 	if( !IsPlayerConnected(playerid) ) {
 		return false;
 	}
 
-	if( !IsValidPlayerProgressBar(playerid, PlayerBar:barid) ) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return false;
 	}
 
@@ -471,7 +471,7 @@ _progress2_renderBar(const playerid, const barid) {
 	}
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
-		ShowPlayerProgressBar(playerid, PlayerBar:barid);
+		ShowPlayerProgressBar(playerid, barid);
 	}
 
 	return true;
