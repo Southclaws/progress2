@@ -49,7 +49,7 @@ enum E_BAR_TEXT_DRAW {
 static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
 new
-	if(defined _INC_y_iterate)
+	#if(defined _INC_y_iterate)
 		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
 	#endif
 	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA]
@@ -497,6 +497,7 @@ hook OnScriptExit() {
 		}
 	}
 }
+#endif
 
 stock DestroyAllPlayerProgressBars(playerid) {
 	for(new i = 0; i < MAX_PLAYER_BARS; i++) {
@@ -505,7 +506,6 @@ stock DestroyAllPlayerProgressBars(playerid) {
 
 	return 1;
 }
-#endif
 
 stock Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction) {
 	new Float:result;
