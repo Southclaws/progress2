@@ -331,6 +331,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		direction = pbar_Data[playerid][barid][pbar_direction],
 		Float:boundry_size,
+		Float:adopted_size,
 		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
 	if( value < 0.0 ) {
@@ -345,6 +346,13 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	} else {
 		boundry_size = pbar_Data[playerid][barid][pbar_height];
 	}
+	adopted_size = _bar_percent(
+		pbar_Data[playerid][barid][pbar_posX],
+		boundry_size,
+		max_value,
+		value,
+		direction
+	);
 
 	PlayerTextDrawUseBox(playerid, ptr_main, value > 0.0);
 
@@ -352,22 +360,10 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 
 	switch(direction) {
 		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT: {
-			PlayerTextDrawTextSize(playerid, ptr_main,
-				_bar_percent(
-					pbar_Data[playerid][barid][pbar_posX],
-					boundry_size,
-					max_value,
-					value,
-					direction), 0.0);
+			PlayerTextDrawTextSize(playerid, ptr_main, adopted_size, 0.0);
 		}
 		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN: {
-			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0,
-				_bar_percent(
-					pbar_Data[playerid][barid][pbar_posX],
-					boundry_size,
-					max_value,
-					value,
-					direction));
+			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0, adopted_size);
 		}
 	}
 
