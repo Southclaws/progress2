@@ -51,14 +51,23 @@ new Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
 
 forward PlayerBar:CreatePlayerProgressBar(
-	playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2,
-	colour = 0xFF1C1CFF, Float:max=100.0, direction=BAR_DIRECTION_RIGHT);
+	playerid,
+	Float:x, Float:y,
+	Float:width=55.5, Float:height=3.2,
+	colour = 0xFF1C1CFF,
+	Float:max=100.0,
+	direction=BAR_DIRECTION_RIGHT
+);
 forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
 forward Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction);
 
 stock PlayerBar:CreatePlayerProgressBar(
-	playerid, Float:x, Float:y, Float:width = 55.5, Float:height = 3.2,
-	colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT
+	playerid,
+	Float:x, Float:y,
+	Float:width = 55.5, Float:height = 3.2,
+	colour = 0xFF1C1CFF,
+	Float:max = 100.0,
+	direction = BAR_DIRECTION_RIGHT
 ) {
 	if(!IsPlayerConnected(playerid)) {
 		#if(defined _logger_included)
