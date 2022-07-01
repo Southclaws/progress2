@@ -488,6 +488,7 @@ hook OnScriptExit() {
 			DestroyAllPlayerProgressBars(i);
 	}
 }
+#endif
 
 stock DestroyAllPlayerProgressBars(playerid) {
 	for(new i = 0; i < MAX_PLAYER_BARS; i++) {
@@ -496,7 +497,6 @@ stock DestroyAllPlayerProgressBars(playerid) {
 
 	return 1;
 }
-#endif
 
 stock Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction) {
 	new Float:result;
