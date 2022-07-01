@@ -266,6 +266,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 
 	new
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		direction = pbar_Data[playerid][barid][pbar_direction],
 		Float:boundry_size,
 		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
@@ -286,7 +287,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 
 	pbar_Data[playerid][_:barid][pbar_progressValue] = value;
 
-	switch(pbar_Data[playerid][_:barid][pbar_direction]) {
+	switch(direction) {
 		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT: {
 			PlayerTextDrawTextSize(playerid, ptr_main,
 				_bar_percent(
@@ -294,7 +295,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 					boundry_size,
 					max_value,
 					value,
-					pbar_Data[playerid][_:barid][pbar_direction]), 0.0);
+					direction), 0.0);
 		}
 		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN: {
 			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0,
@@ -303,7 +304,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 					boundry_size,
 					max_value,
 					value,
-					pbar_Data[playerid][_:barid][pbar_direction]));
+					direction));
 		}
 	}
 
