@@ -11,7 +11,7 @@
 
 #include <a_samp>
 #tryinclude <logger>
-#include <YSI_Data\y_iterate>
+#tryinclude <YSI_Data\y_iterate>
 
 #include <YSI_Coding\y_hooks>
 
@@ -47,7 +47,10 @@ enum E_BAR_TEXT_DRAW {
 
 static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
-new Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
+new
+	if(defined _INC_y_iterate)
+		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
+	#endif
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
 
 forward PlayerBar:CreatePlayerProgressBar(
@@ -67,15 +70,18 @@ stock PlayerBar:CreatePlayerProgressBar(
 		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
-
+	#if(defined _INC_y_iterate)
 	new barid = Iter_Free(pbar_Index[playerid]);
-
 	if(barid == ITER_NONE) {
 		#if(defined _logger_included)
 		Logger_Err("MAX_PLAYER_BARS limit reached.");
 		#endif
 		return INVALID_PLAYER_BAR_ID;
 	}
+	#else
+	// TODO: make iter-less analog (see next commit).
+	#endif
+
 
 	pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
 	pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
@@ -90,8 +96,9 @@ stock PlayerBar:CreatePlayerProgressBar(
 	pbar_Data[playerid][barid][pbar_progressValue] = 0.0;
 	pbar_Data[playerid][barid][pbar_direction] = direction;
 
+	#if(defined _INC_y_iterate)
 	Iter_Add(pbar_Index[playerid], barid);
-
+	#endif
 	_progress2_renderBar(playerid, barid);
 
 	return PlayerBar:barid;
@@ -105,9 +112,9 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
-
+	#if(defined _INC_y_iterate)
 	Iter_Remove(pbar_Index[playerid], _:barid);
-
+	#endif
 	return 1;
 }
 
@@ -144,7 +151,15 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid) {
 }
 
 stock IsValidPlayerProgressBar(playerid, PlayerBar:barid) {
-	return Iter_Contains(pbar_Index[playerid], _:barid);
+	#if(defined _INC_y_iterate)
+		return Iter_Contains(pbar_Index[playerid], _:barid);
+	#else
+		if( INVALID_PLAYER_BAR_ID < barid && barid < MAX_PLAYER_BARS ) {
+			// TODO: add is_created flag in pbar_Data
+			// return pbar_Data[playerid][barid][is_created];
+		}
+		return false;
+	#endif
 }
 
 // pbar_posX
@@ -437,11 +452,15 @@ _progress2_renderBar(playerid, barid)
 }
 
 hook OnScriptInit() {
+	#if(defined _INC_y_iterate)
 	Iter_Init(pbar_Index);
+	#endif
 }
 
 hook OnPlayerDisconnect(playerid, reason) {
+	#if(defined _INC_y_iterate)
 	Iter_Clear(pbar_Index[playerid]);
+	#endif
 }
 
 hook OnScriptExit() {
