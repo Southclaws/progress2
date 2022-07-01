@@ -370,10 +370,8 @@ _progress2_renderBar(playerid, barid)
 			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10);
 
 			ptd_fill = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x + width - 5.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
 
 			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
 			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
@@ -386,10 +384,8 @@ _progress2_renderBar(playerid, barid)
 			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10);
 
 			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10 - 0.35);
-			PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
 
 			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
 			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_fill], 1);
@@ -402,10 +398,8 @@ _progress2_renderBar(playerid, barid)
 			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, -((height / 10) * 1.02) -0.35);
 
 			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, -(height / 10.0) * 1.02);
-			PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
 
 			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
 			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1);
@@ -418,10 +412,8 @@ _progress2_renderBar(playerid, barid)
 			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, ((height / 10)) -0.35);
 
 			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
-			PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
 			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
 			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, (height / 10.0) - 0.55);
-			PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
 
 			pbar_TextDraw[playerid][barid][pbar_main] = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
 			PlayerTextDrawUseBox		(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1);
@@ -435,6 +427,8 @@ _progress2_renderBar(playerid, barid)
 
 	PlayerTextDrawBoxColor		(playerid, ptd_back, 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
 	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
+	PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
+	PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
 
 	if(pbar_Data[playerid][barid][pbar_show]) {
 		ShowPlayerProgressBar(playerid, PlayerBar:barid);
