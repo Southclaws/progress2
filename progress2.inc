@@ -479,7 +479,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
 	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
-	PlayerTextDrawBoxColor		(playerid, ptd_back, 0x00000000 | (pbar_Data[playerid][barid][pbar_colour] & 0x000000FF));
+	PlayerTextDrawBoxColor		(playerid, ptd_back, 0x00000000 | (color & 0x000000FF));
 	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
 	PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
 	PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
