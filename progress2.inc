@@ -51,14 +51,23 @@ new Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
 
 forward PlayerBar:CreatePlayerProgressBar(
-	playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2,
-	colour = 0xFF1C1CFF, Float:max=100.0, direction=BAR_DIRECTION_RIGHT);
-forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
-forward Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction);
+	const playerid,
+	const Float:x, const Float:y,
+	const Float:width = 55.5, const Float:height = 3.2,
+	const colour = 0xFF1C1CFF,
+	const Float:max = 100.0,
+	const direction = BAR_DIRECTION_RIGHT
+);
+forward Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid);
+forward Float:_bar_percent(const Float:x, const Float:widthorheight, const Float:max, const Float:value, const direction);
 
 stock PlayerBar:CreatePlayerProgressBar(
-	playerid, Float:x, Float:y, Float:width = 55.5, Float:height = 3.2,
-	colour = 0xFF1C1CFF, Float:max = 100.0, direction = BAR_DIRECTION_RIGHT
+	const playerid,
+	const Float:x, const Float:y,
+	const Float:width = 55.5, const Float:height = 3.2,
+	const colour = 0xFF1C1CFF,
+	const Float:max = 100.0,
+	const direction = BAR_DIRECTION_RIGHT
 ) {
 	if(!IsPlayerConnected(playerid)) {
 		#if(defined _logger_included)
@@ -97,7 +106,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 	return PlayerBar:barid;
 }
 
-stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
+stock DestroyPlayerProgressBar(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -111,11 +120,11 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 	return 1;
 }
 
-stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid)
+stock bool:IsPlayerProgressBarVisible(const playerid, const PlayerBar:barid)
 {
    return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show]);
 }
-stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
+stock ShowPlayerProgressBar(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -129,7 +138,7 @@ stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
 	return 1;
 }
 
-stock HidePlayerProgressBar(playerid, PlayerBar:barid) {
+stock HidePlayerProgressBar(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -143,13 +152,13 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid) {
 	return 1;
 }
 
-stock IsValidPlayerProgressBar(playerid, PlayerBar:barid) {
+stock IsValidPlayerProgressBar(const playerid, const PlayerBar:barid) {
 	return Iter_Contains(pbar_Index[playerid], _:barid);
 }
 
 // pbar_posX
 // pbar_posY
-stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y) {
+stock GetPlayerProgressBarPos(const playerid, const PlayerBar:barid, &Float:x, &Float:y) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -160,7 +169,7 @@ stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y) {
 	return 1;
 }
 
-stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y) {
+stock SetPlayerProgressBarPos(const playerid, const PlayerBar:barid, const Float:x, const Float:y) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return false;
 	}
@@ -174,7 +183,7 @@ stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y) {
 }
 
 // pbar_width
-stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid) {
+stock Float:GetPlayerProgressBarWidth(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
@@ -182,7 +191,7 @@ stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid) {
 	return pbar_Data[playerid][_:barid][pbar_width];
 }
 
-stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width) {
+stock SetPlayerProgressBarWidth(const playerid, const PlayerBar:barid, const Float:width) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -195,7 +204,7 @@ stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width) {
 }
 
 // pbar_height
-stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid) {
+stock Float:GetPlayerProgressBarHeight(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
@@ -203,7 +212,7 @@ stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid) {
 	return pbar_Data[playerid][_:barid][pbar_height];
 }
 
-stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height) {
+stock SetPlayerProgressBarHeight(const playerid, const PlayerBar:barid, const Float:height) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -216,7 +225,7 @@ stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height) {
 }
 
 // pbar_colour
-stock GetPlayerProgressBarColour(playerid, PlayerBar:barid) {
+stock GetPlayerProgressBarColour(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -224,7 +233,7 @@ stock GetPlayerProgressBarColour(playerid, PlayerBar:barid) {
 	return pbar_Data[playerid][_:barid][pbar_colour];
 }
 
-stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour) {
+stock SetPlayerProgressBarColour(const playerid, const PlayerBar:barid, const colour) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -239,7 +248,7 @@ stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour) {
 }
 
 // pbar_maxValue
-stock Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid) {
+stock Float:GetPlayerProgressBarMaxValue(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
@@ -247,7 +256,7 @@ stock Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid) {
 	return pbar_Data[playerid][_:barid][pbar_maxValue];
 }
 
-stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max) {
+stock SetPlayerProgressBarMaxValue(const playerid, const PlayerBar:barid, const Float:max) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -259,7 +268,7 @@ stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max) {
 }
 
 // pbar_progressValue
-stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
+stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:value) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -304,7 +313,7 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 	return 1;
 }
 
-stock Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid) {
+stock Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
@@ -313,7 +322,7 @@ stock Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid) {
 }
 
 // pbar_direction
-stock GetPlayerProgressBarDirection(playerid, PlayerBar:barid) {
+stock GetPlayerProgressBarDirection(const playerid, const PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -321,7 +330,7 @@ stock GetPlayerProgressBarDirection(playerid, PlayerBar:barid) {
 	return pbar_Data[playerid][_:barid][pbar_direction];
 }
 
-stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
+stock SetPlayerProgressBarDirection(const playerid, const PlayerBar:barid, const direction) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
@@ -336,7 +345,7 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
 	Internal
 */
 
-_progress2_renderBar(playerid, barid)
+_progress2_renderBar(const playerid, const barid)
 {
 	if(!IsPlayerConnected(playerid)) {
 		return false;
@@ -451,7 +460,7 @@ hook OnScriptExit() {
 	}
 }
 
-stock DestroyAllPlayerProgressBars(playerid) {
+stock DestroyAllPlayerProgressBars(const playerid) {
 	for(new i = 0; i < MAX_PLAYER_BARS; i++) {
 		DestroyPlayerProgressBar(playerid, PlayerBar:i);
 	}
@@ -459,7 +468,7 @@ stock DestroyAllPlayerProgressBars(playerid) {
 	return 1;
 }
 
-stock Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction) {
+stock Float:_bar_percent(const Float:x, const Float:widthorheight, const Float:max, const Float:value, const direction) {
 	new Float:result;
 
 	switch(direction) {
