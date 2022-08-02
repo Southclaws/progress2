@@ -28,6 +28,7 @@ enum {
 }
 
 enum E_BAR_DATA {
+	bool:is_created,
 	bool:pbar_show,
 	Float:pbar_posX,
 	Float:pbar_posY,
@@ -52,6 +53,16 @@ new
 		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
 	#endif
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
+
+//	Returns free player progress bar.
+stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
+	for(new PlayerBar:barid = PlayerBar:0; barid < MAX_PLAYER_BARS; ++barid) {
+		if( !pbar_Data[playerid][barid][is_created] ) {
+			return barid;
+		}
+	}
+	return INVALID_PLAYER_BAR_ID;
+}
 
 forward PlayerBar:CreatePlayerProgressBar(
 	playerid, Float:x, Float:y, Float:width=55.5, Float:height=3.2,
@@ -80,12 +91,19 @@ stock PlayerBar:CreatePlayerProgressBar(
 		return INVALID_PLAYER_BAR_ID;
 	}
 	#else
-	// TODO: make iter-less analog (see next commit).
+	new barid = PlayerBarUI_FindFree(playerid);
+	if( barid == INVALID_PLAYER_BAR_ID ) {
+		#if(defined _logger_included)
+		Logger_Err("MAX_PLAYER_BARS limit reached.");
+		#endif
+		return INVALID_PLAYER_BAR_ID;
+	}
 	#endif
 
 	pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
 	pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
 	pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_Data[playerid][barid][is_created] = true;
 	pbar_Data[playerid][barid][pbar_show] = false;
 	pbar_Data[playerid][barid][pbar_posX] = x;
 	pbar_Data[playerid][barid][pbar_posY] = y;
@@ -113,6 +131,7 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
+	pbar_Data[playerid][barid][is_created] = false;
 	#if(defined _INC_y_iterate)
 	Iter_Remove(pbar_Index[playerid], _:barid);
 	#endif
@@ -157,8 +176,7 @@ stock IsValidPlayerProgressBar(playerid, PlayerBar:barid) {
 		return Iter_Contains(pbar_Index[playerid], _:barid);
 	#else
 		if( INVALID_PLAYER_BAR_ID < barid && barid < MAX_PLAYER_BARS ) {
-			// TODO: add is_created flag in pbar_Data
-			// return pbar_Data[playerid][barid][is_created];
+			return pbar_Data[playerid][barid][is_created];
 		}
 		return false;
 	#endif
