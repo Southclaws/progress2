@@ -68,9 +68,9 @@ stock PlayerBar:CreatePlayerProgressBar(
 		return INVALID_PLAYER_BAR_ID;
 	}
 
-	new barid = Iter_Free(pbar_Index[playerid]);
+	new PlayerBar:barid = PlayerBar:Iter_Free(pbar_Index[playerid]);
 
-	if(barid == ITER_NONE) {
+	if(barid == PlayerBar:ITER_NONE) {
 		#if(defined _logger_included)
 		Logger_Err("MAX_PLAYER_BARS limit reached.");
 		#endif
@@ -94,7 +94,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 
 	_progress2_renderBar(playerid, barid);
 
-	return PlayerBar:barid;
+	return barid;
 }
 
 stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
