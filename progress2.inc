@@ -423,12 +423,10 @@ _progress2_renderBar(playerid, barid)
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_fill;
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
-	PlayerTextDrawBoxColor		(playerid, ptd_back, 0x00000000 | (color & 0x000000FF));
 	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
-	PlayerTextDrawBoxColor		(playerid, ptd_fill, (color & 0xFFFFFF00) | (0x66 & ((color & 0x000000FF) / 2)));
 	PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
-	PlayerTextDrawBoxColor		(playerid, ptd_main, color);
 	PlayerTextDrawUseBox		(playerid, ptd_main, 1);
+	SetPlayerProgressBarColour(playerid, barid, color);
 
 	if(pbar_Data[playerid][barid][pbar_show]) {
 		ShowPlayerProgressBar(playerid, PlayerBar:barid);
