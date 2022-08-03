@@ -16,7 +16,7 @@
 #include <YSI_Coding\y_hooks>
 
 
-#define MAX_PLAYER_BARS (_:MAX_PLAYER_TEXT_DRAWS / 3)
+#define MAX_PLAYER_BARS (PlayerBar:(_:MAX_PLAYER_TEXT_DRAWS / 3))
 #define INVALID_PLAYER_BAR_VALUE (Float:0xFFFFFFFF)
 #define INVALID_PLAYER_BAR_ID (PlayerBar:-1)
 
