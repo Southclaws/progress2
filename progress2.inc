@@ -154,8 +154,8 @@ stock GetPlayerProgressBarPos(playerid, PlayerBar:barid, &Float:x, &Float:y) {
 		return 0;
 	}
 
-	x = pbar_Data[playerid][_:barid][pbar_posX];
-	y = pbar_Data[playerid][_:barid][pbar_posY];
+	x = pbar_Data[playerid][barid][pbar_posX];
+	y = pbar_Data[playerid][barid][pbar_posY];
 
 	return 1;
 }
@@ -165,10 +165,10 @@ stock SetPlayerProgressBarPos(playerid, PlayerBar:barid, Float:x, Float:y) {
 		return false;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_posX] = x;
-	pbar_Data[playerid][_:barid][pbar_posY] = y;
+	pbar_Data[playerid][barid][pbar_posX] = x;
+	pbar_Data[playerid][barid][pbar_posY] = y;
 
-	_progress2_renderBar(playerid, _:barid);
+	_progress2_renderBar(playerid, barid);
 
 	return true;
 }
@@ -179,7 +179,7 @@ stock Float:GetPlayerProgressBarWidth(playerid, PlayerBar:barid) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
 
-	return pbar_Data[playerid][_:barid][pbar_width];
+	return pbar_Data[playerid][barid][pbar_width];
 }
 
 stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width) {
@@ -187,9 +187,9 @@ stock SetPlayerProgressBarWidth(playerid, PlayerBar:barid, Float:width) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_width] = width;
+	pbar_Data[playerid][barid][pbar_width] = width;
 
-	_progress2_renderBar(playerid, _:barid);
+	_progress2_renderBar(playerid, barid);
 
 	return 1;
 }
@@ -200,7 +200,7 @@ stock Float:GetPlayerProgressBarHeight(playerid, PlayerBar:barid) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
 
-	return pbar_Data[playerid][_:barid][pbar_height];
+	return pbar_Data[playerid][barid][pbar_height];
 }
 
 stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height) {
@@ -208,9 +208,9 @@ stock SetPlayerProgressBarHeight(playerid, PlayerBar:barid, Float:height) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_height] = height;
+	pbar_Data[playerid][barid][pbar_height] = height;
 
-	_progress2_renderBar(playerid, _:barid);
+	_progress2_renderBar(playerid, barid);
 
 	return 1;
 }
@@ -221,7 +221,7 @@ stock GetPlayerProgressBarColour(playerid, PlayerBar:barid) {
 		return 0;
 	}
 
-	return pbar_Data[playerid][_:barid][pbar_colour];
+	return pbar_Data[playerid][barid][pbar_colour];
 }
 
 stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour) {
@@ -229,11 +229,11 @@ stock SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_colour] = colour;
+	pbar_Data[playerid][barid][pbar_colour] = colour;
 
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][_:barid][pbar_back], 0x00000000 | (colour & 0x000000FF));
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill], (colour & 0xFFFFFF00) | (0x66 & ((colour & 0x000000FF) / 2)));
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][_:barid][pbar_main], colour);
+	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (colour & 0x000000FF));
+	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (colour & 0xFFFFFF00) | (0x66 & ((colour & 0x000000FF) / 2)));
+	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_main], colour);
 
 	return 1;
 }
@@ -244,7 +244,7 @@ stock Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
 
-	return pbar_Data[playerid][_:barid][pbar_maxValue];
+	return pbar_Data[playerid][barid][pbar_maxValue];
 }
 
 stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max) {
@@ -252,8 +252,8 @@ stock SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_maxValue] = max;
-	SetPlayerProgressBarValue(playerid, barid, pbar_Data[playerid][_:barid][pbar_progressValue]);
+	pbar_Data[playerid][barid][pbar_maxValue] = max;
+	SetPlayerProgressBarValue(playerid, barid, pbar_Data[playerid][barid][pbar_progressValue]);
 
 	return 1;
 }
@@ -267,37 +267,37 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 	if(value < 0.0) {
 		value = 0.0;
 	} else {
-		if(value > pbar_Data[playerid][_:barid][pbar_maxValue]) {
-			value = pbar_Data[playerid][_:barid][pbar_maxValue];
+		if(value > pbar_Data[playerid][barid][pbar_maxValue]) {
+			value = pbar_Data[playerid][barid][pbar_maxValue];
 		}
 	}
 
-	PlayerTextDrawUseBox(playerid, pbar_TextDraw[playerid][_:barid][pbar_main], value > 0.0);
+	PlayerTextDrawUseBox(playerid, pbar_TextDraw[playerid][barid][pbar_main], value > 0.0);
 
-	pbar_Data[playerid][_:barid][pbar_progressValue] = value;
+	pbar_Data[playerid][barid][pbar_progressValue] = value;
 
-	switch(pbar_Data[playerid][_:barid][pbar_direction]) {
+	switch(pbar_Data[playerid][barid][pbar_direction]) {
 		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT: {
-			PlayerTextDrawTextSize(playerid, pbar_TextDraw[playerid][_:barid][pbar_main],
+			PlayerTextDrawTextSize(playerid, pbar_TextDraw[playerid][barid][pbar_main],
 				_bar_percent(
-					pbar_Data[playerid][_:barid][pbar_posX],
-					pbar_Data[playerid][_:barid][pbar_width],
-					pbar_Data[playerid][_:barid][pbar_maxValue],
+					pbar_Data[playerid][barid][pbar_posX],
+					pbar_Data[playerid][barid][pbar_width],
+					pbar_Data[playerid][barid][pbar_maxValue],
 					value,
-					pbar_Data[playerid][_:barid][pbar_direction]), 0.0);
+					pbar_Data[playerid][barid][pbar_direction]), 0.0);
 		}
 		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN: {
-			PlayerTextDrawLetterSize(playerid, pbar_TextDraw[playerid][_:barid][pbar_main], 1.0,
+			PlayerTextDrawLetterSize(playerid, pbar_TextDraw[playerid][barid][pbar_main], 1.0,
 				_bar_percent(
-					pbar_Data[playerid][_:barid][pbar_posX],
-					pbar_Data[playerid][_:barid][pbar_height],
-					pbar_Data[playerid][_:barid][pbar_maxValue],
+					pbar_Data[playerid][barid][pbar_posX],
+					pbar_Data[playerid][barid][pbar_height],
+					pbar_Data[playerid][barid][pbar_maxValue],
 					value,
-					pbar_Data[playerid][_:barid][pbar_direction]));
+					pbar_Data[playerid][barid][pbar_direction]));
 		}
 	}
 
-	if(pbar_Data[playerid][_:barid][pbar_show]) {
+	if(pbar_Data[playerid][barid][pbar_show]) {
 		ShowPlayerProgressBar(playerid, barid);
 	}
 
@@ -309,7 +309,7 @@ stock Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid) {
 		return INVALID_PLAYER_BAR_VALUE;
 	}
 
-	return pbar_Data[playerid][_:barid][pbar_progressValue];
+	return pbar_Data[playerid][barid][pbar_progressValue];
 }
 
 // pbar_direction
@@ -318,7 +318,7 @@ stock GetPlayerProgressBarDirection(playerid, PlayerBar:barid) {
 		return 0;
 	}
 
-	return pbar_Data[playerid][_:barid][pbar_direction];
+	return pbar_Data[playerid][barid][pbar_direction];
 }
 
 stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
@@ -326,8 +326,8 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_direction] = direction;
-	_progress2_renderBar(playerid, _:barid);
+	pbar_Data[playerid][barid][pbar_direction] = direction;
+	_progress2_renderBar(playerid, barid);
 
 	return 1;
 }
@@ -452,8 +452,8 @@ hook OnScriptExit() {
 }
 
 stock DestroyAllPlayerProgressBars(playerid) {
-	for(new i = 0; i < MAX_PLAYER_BARS; i++) {
-		DestroyPlayerProgressBar(playerid, PlayerBar:i);
+	for(new PlayerBar:i = PlayerBar:0; i < MAX_PLAYER_BARS; i++) {
+		DestroyPlayerProgressBar(playerid, i);
 	}
 
 	return 1;
