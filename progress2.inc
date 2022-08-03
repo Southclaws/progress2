@@ -102,9 +102,9 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 		return 0;
 	}
 
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
+	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
+	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
+	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
 
 	Iter_Remove(pbar_Index[playerid], _:barid);
 
@@ -113,18 +113,18 @@ stock DestroyPlayerProgressBar(playerid, PlayerBar:barid) {
 
 stock bool:IsPlayerProgressBarVisible(playerid, PlayerBar:barid)
 {
-   return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][_:barid][pbar_show]);
+   return (IsValidPlayerProgressBar(playerid, barid) && pbar_Data[playerid][barid][pbar_show]);
 }
 stock ShowPlayerProgressBar(playerid, PlayerBar:barid) {
 	if(!IsValidPlayerProgressBar(playerid, barid)) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_show] = true;
+	pbar_Data[playerid][barid][pbar_show] = true;
 
-	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
-	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
-	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
+	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
+	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
+	PlayerTextDrawShow(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
 
 	return 1;
 }
@@ -134,11 +134,11 @@ stock HidePlayerProgressBar(playerid, PlayerBar:barid) {
 		return 0;
 	}
 
-	pbar_Data[playerid][_:barid][pbar_show] = false;
+	pbar_Data[playerid][barid][pbar_show] = false;
 
-	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_back]);
-	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_fill]);
-	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][_:barid][pbar_main]);
+	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
+	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
+	PlayerTextDrawHide(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
 
 	return 1;
 }
