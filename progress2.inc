@@ -82,7 +82,6 @@ stock PlayerBar:CreatePlayerProgressBar(
 		return INVALID_PLAYER_BAR_ID;
 	}
 
-	new PlayerBar:barid = PlayerBar:Iter_Free(pbar_Index[playerid]);
 	#if(defined _INC_y_iterate)
 	new PlayerBar:barid = PlayerBar:Iter_Free(pbar_Index[playerid]);
 
