@@ -92,7 +92,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 		return INVALID_PLAYER_BAR_ID;
 	}
 	#else
-	new barid = PlayerBarUI_FindFree(playerid);
+	new PlayerBar:barid = PlayerBarUI_FindFree(playerid);
 	if( barid == INVALID_PLAYER_BAR_ID ) {
 		#if(defined _logger_included)
 		Logger_Err("MAX_PLAYER_BARS limit reached.");
