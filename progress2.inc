@@ -82,7 +82,6 @@ stock PlayerBar:CreatePlayerProgressBar(
 		return INVALID_PLAYER_BAR_ID;
 	}
 
-	new PlayerBar:barid = PlayerBar:Iter_Free(pbar_Index[playerid]);
 	#if(defined _INC_y_iterate)
 	new PlayerBar:barid = PlayerBar:Iter_Free(pbar_Index[playerid]);
 
@@ -93,7 +92,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 		return INVALID_PLAYER_BAR_ID;
 	}
 	#else
-	new barid = PlayerBarUI_FindFree(playerid);
+	new PlayerBar:barid = PlayerBarUI_FindFree(playerid);
 	if( barid == INVALID_PLAYER_BAR_ID ) {
 		#if(defined _logger_included)
 		Logger_Err("MAX_PLAYER_BARS limit reached.");
