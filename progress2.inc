@@ -73,6 +73,8 @@ forward PlayerBar:CreatePlayerProgressBar(
 	Float:max = 100.0,
 	direction = BAR_DIRECTION_RIGHT
 );
+forward Float:GetPlayerProgressBarValue(playerid, PlayerBar:barid);
+forward Float:_bar_percent(Float:x, Float:widthorheight, Float:max, Float:value, direction);
 
 stock PlayerBar:CreatePlayerProgressBar(
 	playerid,
