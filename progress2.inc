@@ -386,11 +386,10 @@ stock SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction) {
 */
 
 _progress2_renderBar(playerid, barid) {
-	if( !IsPlayerConnected(playerid) ) {
-		return false;
-	}
-
-	if( !IsValidPlayerProgressBar(playerid, PlayerBar:barid) ) {
+	if(
+		!IsPlayerConnected(playerid) ||
+		!IsValidPlayerProgressBar(playerid, barid)
+	) {
 		return false;
 	}
 
