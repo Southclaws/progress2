@@ -308,13 +308,6 @@ stock SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value) {
 		return 0;
 	}
 
-	if( value < 0.0 ) {
-		value = 0.0;
-	} else {
-		if( value > pbar_Data[playerid][_:barid][pbar_maxValue] ) {
-			value = pbar_Data[playerid][_:barid][pbar_maxValue];
-		}
-	}
 	new
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		direction = pbar_Data[playerid][barid][pbar_direction],
