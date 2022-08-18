@@ -54,6 +54,26 @@ new
 	#endif
     pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA];
 
+//	Reset info of player progress bar.
+stock PlayerBarUI_ResetPlayerItem(const playerid, const PlayerBar:barid) {
+	pbar_TextDraw[playerid][barid][pbar_back] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_TextDraw[playerid][barid][pbar_fill] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_TextDraw[playerid][barid][pbar_main] = PlayerText:INVALID_TEXT_DRAW;
+	pbar_Data[playerid][barid][is_created] = false;
+}
+
+//	Reset info of all bars for one player.
+stock PlayerBarUI_ResetPlayer(const playerid) {
+	for(new PlayerBar:barid = PlayerBar:0; barid < MAX_PLAYER_BARS; ++barid) {
+		PlayerBarUI_ResetPlayerItem(playerid, barid);
+	}
+}
+//	Reset all bars for all players.
+stock PlayerBarUI_ResetAll() {
+	for(new playerid = 0; playerid < MAX_PLAYERS; ++playerid) {
+		PlayerBarUI_ResetPlayer(playerid);
+	}
+}
 //	Returns free player progress bar.
 stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
 	for(new PlayerBar:barid = PlayerBar:0; barid < MAX_PLAYER_BARS; ++barid) {
