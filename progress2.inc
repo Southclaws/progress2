@@ -50,7 +50,7 @@ static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
 new
 	#if(defined _INC_y_iterate)
-		Iterator:pbar_Index[MAX_PLAYERS]<MAX_PLAYER_BARS>,
+		Iterator:pbar_Index[MAX_PLAYERS]<PlayerBar:(_:MAX_PLAYER_BARS)>,
 	#endif
 	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA]
 ;
@@ -165,7 +165,7 @@ stock DestroyPlayerProgressBar(const playerid, const PlayerBar:barid) {
 
 	pbar_Data[playerid][barid][is_created] = false;
 	#if(defined _INC_y_iterate)
-	Iter_Remove(pbar_Index[playerid], _:barid);
+	Iter_Remove(pbar_Index[playerid], barid);
 	#endif
 
 	return 1;
@@ -204,7 +204,7 @@ stock HidePlayerProgressBar(const playerid, const PlayerBar:barid) {
 
 stock IsValidPlayerProgressBar(const playerid, const PlayerBar:barid) {
 	#if(defined _INC_y_iterate)
-		return Iter_Contains(pbar_Index[playerid], _:barid);
+		return Iter_Contains(pbar_Index[playerid], barid);
 	#else
 		if( INVALID_PLAYER_BAR_ID < barid && barid < MAX_PLAYER_BARS ) {
 			return pbar_Data[playerid][barid][is_created];
