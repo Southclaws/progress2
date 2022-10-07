@@ -497,7 +497,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 
 	return true;
 }
-#if(defined __INC_y_hooks)
+#if(defined _INC_y_hooks)
 hook OnScriptInit() {
 	#if(defined _INC_y_iterate)
 	Iter_Init(pbar_Index);
