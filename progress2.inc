@@ -484,7 +484,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		}
 	}
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
-	pbar_TextDraw[playerid][barid][pbar_main] = ptd_fill;
+	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
 	PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
