@@ -9,7 +9,13 @@
 #endif
 #define _progress2_included
 
-#include <a_samp>
+#tryinclude <open.mp>
+
+#if !defined _INC_open_mp
+	#include <a_samp>
+	PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColour) = PlayerTextDrawBoxColor;
+#endif
+
 #tryinclude <logger>
 #tryinclude <YSI_Data\y_iterate>
 
@@ -297,9 +303,9 @@ stock SetPlayerProgressBarColour(const playerid, const PlayerBar:barid, const co
 
 	pbar_Data[playerid][barid][pbar_colour] = colour;
 
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (colour & 0x000000FF));
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (colour & 0xFFFFFF00) | (0x66 & ((colour & 0x000000FF) / 2)));
-	PlayerTextDrawBoxColor(playerid, pbar_TextDraw[playerid][barid][pbar_main], colour);
+	PlayerTextDrawBoxColour(playerid, pbar_TextDraw[playerid][barid][pbar_back], 0x00000000 | (colour & 0x000000FF));
+	PlayerTextDrawBoxColour(playerid, pbar_TextDraw[playerid][barid][pbar_fill], (colour & 0xFFFFFF00) | (0x66 & ((colour & 0x000000FF) / 2)));
+	PlayerTextDrawBoxColour(playerid, pbar_TextDraw[playerid][barid][pbar_main], colour);
 
 	return 1;
 }
@@ -486,9 +492,9 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
 	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
-	PlayerTextDrawUseBox		(playerid, ptd_back, 1);
-	PlayerTextDrawUseBox		(playerid, ptd_fill, 1);
-	PlayerTextDrawUseBox		(playerid, ptd_main, 1);
+	PlayerTextDrawUseBox		(playerid, ptd_back, true);
+	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
+	PlayerTextDrawUseBox		(playerid, ptd_main, true);
 	SetPlayerProgressBarColour(playerid, barid, color);
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
