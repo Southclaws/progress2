@@ -13,7 +13,7 @@
 
 #if !defined _INC_open_mp
 	#include <a_samp>
-	PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColour) = PlayerTextDrawBoxColor;
+	native PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColour) = PlayerTextDrawBoxColor;
 #endif
 
 #tryinclude <logger>
