@@ -11,9 +11,9 @@
 
 #tryinclude <open.mp>
 
-#if !defined _INC_open_mp
+#if !defined PlayerTextDrawBoxColour
 	#include <a_samp>
-	native PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColour) = PlayerTextDrawBoxColor;
+	#define PlayerTextDrawBoxColour PlayerTextDrawBoxColor
 #endif
 
 #tryinclude <logger>
