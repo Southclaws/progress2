@@ -43,6 +43,8 @@ enum E_BAR_DATA {
 	pbar_colour,
 	Float:pbar_maxValue,
 	Float:pbar_progressValue,
+	Float:E_PADDING_X,
+	Float:E_PADDING_Y,
 	pbar_direction
 }
 
@@ -150,6 +152,8 @@ stock PlayerBar:CreatePlayerProgressBar(
 	pbar_Data[playerid][barid][pbar_maxValue] = max;
 	pbar_Data[playerid][barid][pbar_progressValue] = 0.0;
 	pbar_Data[playerid][barid][pbar_direction] = direction;
+	pbar_Data[playerid][barid][E_PADDING_X] = 1.2;
+	pbar_Data[playerid][barid][E_PADDING_Y] = 1.0;
 
 	#if(defined _INC_y_iterate)
 	Iter_Add(pbar_Index[playerid], barid);
@@ -409,6 +413,24 @@ stock SetPlayerProgressBarDirection(const playerid, const PlayerBar:barid, const
 	return 1;
 }
 
+stock GetPlayerProgressBarPadding(const playerid, const PlayerBar:barid, &Float:padding_x, &Float:padding_y) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
+		return 0;
+	}
+	padding_x = pbar_Data[playerid][barid][E_PADDING_X];
+	padding_y = pbar_Data[playerid][barid][E_PADDING_Y];
+	return 1;
+}
+stock SetPlayerProgressBarPadding(const playerid, const PlayerBar:barid, const Float:padding_x, const Float:padding_y) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
+		return 0;
+	}
+	pbar_Data[playerid][barid][E_PADDING_X] = padding_x;
+	pbar_Data[playerid][barid][E_PADDING_Y] = padding_y;
+	_progress2_renderBar(playerid, barid);
+	return 1;
+}
+
 /*
 	Internal
 */
@@ -427,6 +449,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	new
 		Float:pos_x,
 		Float:pos_y,
+		Float:padding_x, Float:padding_y,
 		Float:width = pbar_Data[playerid][barid][pbar_width],
 		Float:height = pbar_Data[playerid][barid][pbar_height],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
@@ -438,6 +461,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		PlayerText:ptd_main
 	;
 	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
+	GetPlayerProgressBarPadding(playerid, barid, padding_x, padding_y);
 	ptd_back = CreatePlayerTextDraw(playerid, pos_x, pos_y, "_");
 	switch(direction) {
 		case BAR_DIRECTION_RIGHT: {
