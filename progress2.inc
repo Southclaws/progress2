@@ -41,6 +41,7 @@ enum E_BAR_DATA {
 	Float:pbar_width,
 	Float:pbar_height,
 	pbar_colour,
+	Float:pbar_minValue,
 	Float:pbar_maxValue,
 	Float:pbar_progressValue,
 	Float:E_PADDING_X,
@@ -149,6 +150,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 	pbar_Data[playerid][barid][pbar_width] = width;
 	pbar_Data[playerid][barid][pbar_height] = height;
 	pbar_Data[playerid][barid][pbar_colour] = colour;
+	pbar_Data[playerid][barid][pbar_minValue] = 0.0;
 	pbar_Data[playerid][barid][pbar_maxValue] = max;
 	pbar_Data[playerid][barid][pbar_progressValue] = 0.0;
 	pbar_Data[playerid][barid][pbar_direction] = direction;
@@ -314,7 +316,21 @@ stock SetPlayerProgressBarColour(const playerid, const PlayerBar:barid, const co
 	return 1;
 }
 
-// pbar_maxValue
+stock Float:GetPlayerProgressBarMinValue(const playerid, const PlayerBar:barid) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
+		return INVALID_PLAYER_BAR_VALUE;
+	}
+	return pbar_Data[playerid][barid][pbar_minValue];
+}
+
+stock SetPlayerProgressBarMinValue(const playerid, const PlayerBar:barid, const Float:min_value) {
+	if( !IsValidPlayerProgressBar(playerid, barid) ) {
+		return 0;
+	}
+	pbar_Data[playerid][barid][pbar_minValue] = min_value;
+	SetPlayerProgressBarValue(playerid, barid, pbar_Data[playerid][barid][pbar_progressValue]);
+	return 1;
+}
 stock Float:GetPlayerProgressBarMaxValue(const playerid, const PlayerBar:barid) {
 	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return INVALID_PLAYER_BAR_VALUE;
@@ -341,6 +357,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	}
 
 	new
+		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		direction = pbar_Data[playerid][barid][pbar_direction],
 		Float:boundry_size,
@@ -452,6 +469,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		Float:padding_x, Float:padding_y,
 		Float:width = pbar_Data[playerid][barid][pbar_width],
 		Float:height = pbar_Data[playerid][barid][pbar_height],
+		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
 		direction = pbar_Data[playerid][barid][pbar_direction],
