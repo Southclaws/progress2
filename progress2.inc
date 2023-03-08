@@ -1,3 +1,8 @@
+/*
+	Note 1: Background & filter TextDraws have normalized corner positions.
+	Note 2: Bar TextDraw have corners that associated with min & max values (unnormalized).
+	Note 3: _bar_percent is now DEPRECATED - do not ever use it.
+*/
 // built-in include guard removal
 // just in case the user has a local dependency with the same file name
 #if defined _inc_progress2
@@ -29,8 +34,10 @@
 enum {
 	BAR_DIRECTION_RIGHT,
 	BAR_DIRECTION_LEFT,
+	BAR_DIRECTION_HORIZONTAL_FROM_0,
 	BAR_DIRECTION_UP,
-	BAR_DIRECTION_DOWN
+	BAR_DIRECTION_DOWN,
+	BAR_DIRECTION_VERTICAL_FROM_0,
 }
 
 enum E_BAR_DATA {
@@ -48,6 +55,15 @@ enum E_BAR_DATA {
 	Float:E_PADDING_Y,
 	pbar_direction
 }
+
+static const Float:direction_size_mult[] = {
+	1.0,	// BAR_DIRECTION_RIGHT
+	-1.0,	// BAR_DIRECTION_LEFT
+	1.0,	// BAR_DIRECTION_HORIZONTAL_FROM_0
+	-1.0,	// BAR_DIRECTION_UP
+	1.0,	// BAR_DIRECTION_DOWN
+	-1.0	// BAR_DIRECTION_VERTICAL_FROM_0
+};
 
 enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_back,
@@ -103,7 +119,6 @@ forward PlayerBar:CreatePlayerProgressBar(
 	const direction = BAR_DIRECTION_RIGHT
 );
 forward Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid);
-forward Float:_bar_percent(const Float:x, const Float:widthorheight, const Float:max, const Float:value, const direction);
 
 stock PlayerBar:CreatePlayerProgressBar(
 	const playerid,
@@ -360,37 +375,34 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		direction = pbar_Data[playerid][barid][pbar_direction],
+		Float:ratio_to,
 		Float:boundry_size,
 		Float:adopted_size,
 		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
-	if( value < 0.0 ) {
-		value = 0.0;
+	if( value < min_value ) {
+		value = min_value;
 	} else if( value > max_value ) {
 		value = max_value;
 	}
+	ratio_to = (value - min_value) / (max_value - min_value);
+
 	if( direction == BAR_DIRECTION_RIGHT || direction == BAR_DIRECTION_LEFT ) {
 		boundry_size = pbar_Data[playerid][barid][pbar_width];
 	} else {
 		boundry_size = pbar_Data[playerid][barid][pbar_height];
 	}
-	adopted_size = _bar_percent(
-		pbar_Data[playerid][barid][pbar_posX],
-		boundry_size,
-		max_value,
-		value,
-		direction
-	);
+	adopted_size = boundry_size * ratio_to * direction_size_mult[direction];
 
-	PlayerTextDrawUseBox(playerid, ptr_main, value > 0.0);
+	PlayerTextDrawUseBox(playerid, ptr_main, value > min_value);
 
 	pbar_Data[playerid][barid][pbar_progressValue] = value;
 
 	switch(direction) {
-		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT: {
+		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT, BAR_DIRECTION_HORIZONTAL_FROM_0: {
 			PlayerTextDrawTextSize(playerid, ptr_main, adopted_size, 0.0);
 		}
-		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN: {
+		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN, BAR_DIRECTION_VERTICAL_FROM_0: {
 			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0, adopted_size);
 		}
 	}
@@ -474,63 +486,92 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
 		direction = pbar_Data[playerid][barid][pbar_direction],
 		color = pbar_Data[playerid][barid][pbar_colour],
+		Float:outer_pos_x2, Float:outer_pos_y2,	// 'back' pos (right bottom corner)
+		Float:inner_pos_x1, Float:inner_pos_y1,	// 'fill' pos (left upper corner)
+		Float:inner_pos_x2, Float:inner_pos_y2,	// 'fill' pos (right bottom corner)
+		Float:inner_size_x, Float:inner_size_y,	// 'fill' size
+		Float:value_pos_x1, Float:value_pos_y1,
+		Float:value_pos_x2, Float:value_pos_y2,
+		Float:value_size_y,
+		Float:size_multiplier = direction_size_mult[direction],
+		bool:is_vertical = (direction > BAR_DIRECTION_HORIZONTAL_FROM_0),
+		Float:ratio_from,
+		Float:ratio_to,
 		PlayerText:ptd_back,
 		PlayerText:ptd_fill,
 		PlayerText:ptd_main
 	;
 	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
 	GetPlayerProgressBarPadding(playerid, barid, padding_x, padding_y);
-	ptd_back = CreatePlayerTextDraw(playerid, pos_x, pos_y, "_");
+	//	Computing normalized sizes and corner positions in canvas pixels.
+	outer_pos_x2 = pos_x + width;
+	outer_pos_y2 = pos_y + height;
+	inner_pos_x1 = pos_x + padding_x;
+	inner_pos_x2 = outer_pos_x2 - padding_x;
+	inner_pos_y1 = pos_y + padding_y;
+	inner_pos_y2 = outer_pos_y2 - padding_y;
+	inner_size_x = inner_pos_x2 - inner_pos_x1;
+	inner_size_y = inner_pos_y2 - inner_pos_y1;
+	bar_getRatios(direction, cur_value, min_value, max_value, ratio_from, ratio_to);
+	ratio_from *= size_multiplier;
+	ratio_to *= size_multiplier;
+	if( is_vertical ) {
+		value_pos_x1 = inner_pos_x1;
+		value_pos_x2 = inner_pos_x2;
+	} else {	// is horizontal.
+		value_pos_y1 = inner_pos_y1;
+		value_pos_y2 = inner_pos_y2;
+	}
 	switch(direction) {
-		case BAR_DIRECTION_RIGHT: {
-			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x + width - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
-
-			ptd_fill = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x + width - 5.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10.0 - 0.35);
-
-			ptd_main = CreatePlayerTextDraw(playerid, pos_x + 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_main, _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, height / 10.0 - 0.35);
+		case BAR_DIRECTION_RIGHT:				{ value_pos_x1 = inner_pos_x1; }
+		case BAR_DIRECTION_LEFT:				{ value_pos_x1 = inner_pos_x2; }
+		case BAR_DIRECTION_HORIZONTAL_FROM_0:	{ value_pos_x1 = inner_pos_x1; }
+		case BAR_DIRECTION_UP:					{ value_pos_y1 = inner_pos_y2; }
+		case BAR_DIRECTION_DOWN:				{ value_pos_y1 = inner_pos_y1; }
+		case BAR_DIRECTION_VERTICAL_FROM_0:		{ value_pos_y1 = inner_pos_y2; }
+	}
+	if( is_vertical ) {
+		value_pos_y2 = value_pos_y1;
+		value_pos_y1 += inner_size_y * ratio_from;
+		value_pos_y2 += inner_size_y * ratio_to;
+	} else {
+		value_pos_x2 = value_pos_x1;
+		value_pos_x1 += inner_size_x * ratio_from;
+		value_pos_x2 += inner_size_x * ratio_to;
+	}
+	// normalising ranges.
+	{
+		new Float:temp_value;
+		if( value_pos_x1 > value_pos_x2 ) {
+			temp_value = value_pos_x2;
+			value_pos_x2 = value_pos_x1;
+			value_pos_x1 = temp_value;
 		}
-		case BAR_DIRECTION_LEFT: {
-			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
-
-			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, height / 10.0 - 0.35);
-
-			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 2.15, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_main, _bar_percent(pos_x, width, max_value, cur_value, direction), 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, height / 10.0 - 0.35);
-		}
-		case BAR_DIRECTION_UP: {
-			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, -((height / 10.0) * 1.02) -0.35);
-
-			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, -(height / 10.0) * 1.02);
-
-			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y - 1.0, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_main, pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
-		}
-		case BAR_DIRECTION_DOWN: {
-			PlayerTextDrawTextSize		(playerid, ptd_back, pos_x - width - 4.0, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, ((height / 10.0)) - 0.35);
-
-			ptd_fill = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_fill, pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, (height / 10.0) - 0.55);
-
-			ptd_main = CreatePlayerTextDraw(playerid, pos_x - 1.2, pos_y + 1.0, "_");
-			PlayerTextDrawTextSize		(playerid, ptd_main, pos_x - width - 2.5, 0.0);
-			PlayerTextDrawLetterSize	(playerid, ptd_main, 1.0, _bar_percent(pos_x, height, max_value, cur_value, direction));
+		if( value_pos_y1 > value_pos_y2 ) {
+			temp_value = value_pos_y2;
+			value_pos_y2 = value_pos_y1;
+			value_pos_y1 = temp_value;
 		}
 	}
+	new Float:correction_x = 1.25;
+	value_pos_x1 += correction_x;
+	value_pos_x2 -= correction_x;
+	inner_pos_x1 += correction_x;
+	inner_pos_x2 -= correction_x;
+
+	value_size_y = value_pos_y2 - value_pos_y1;
+
+	ptd_back = CreatePlayerTextDraw(playerid, pos_x, pos_y, "_");
+	ptd_fill = CreatePlayerTextDraw(playerid, inner_pos_x1, inner_pos_y1, "_");
+	ptd_main = CreatePlayerTextDraw(playerid, value_pos_x1, value_pos_y1, "_");
+	PlayerTextDrawTextSize(playerid, ptd_main, value_pos_x2, 0.0);
+	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, value_size_y / 10.0);
+
+	PlayerTextDrawTextSize		(playerid, ptd_back, outer_pos_x2, 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
+	PlayerTextDrawTextSize		(playerid, ptd_fill, inner_pos_x2, 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, inner_size_y / 10.0);
+
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
 	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
@@ -575,23 +616,18 @@ stock DestroyAllPlayerProgressBars(const playerid) {
 	return 1;
 }
 
-stock Float:_bar_percent(const Float:x, const Float:widthorheight, const Float:max, const Float:value, const direction) {
-	new Float:result;
-
-	switch(direction) {
-		case BAR_DIRECTION_RIGHT: {
-			result = ((x - 3.0) + (((((x - 2.0) + widthorheight) - x) / max) * value));
+static stock bar_getRatios(const direction, const Float:cur_value, const Float:min_value, const Float:max_value, &Float:ratio_from, &Float:ratio_to) {
+	new Float:range_value = max_value - min_value;
+	if( direction == BAR_DIRECTION_HORIZONTAL_FROM_0 || direction == BAR_DIRECTION_VERTICAL_FROM_0 ) {	// From 0.
+		if( max_value < 0.0 ) {
+			ratio_from = 1.0;
+		} else if( min_value > 0.0 ) {
+			ratio_from = 0.0;
+		} else {
+			ratio_from = -min_value / range_value;
 		}
-		case BAR_DIRECTION_LEFT: {
-			result = ((x - 1.0) - (((((x + 2.0) - widthorheight) - x) / max) * -value)) - 4.0;
-		}
-		case BAR_DIRECTION_UP: {
-			result = -((((((widthorheight / 10.0) - 0.45) * 1.02) / max) * value) + 0.55);
-		}
-		case BAR_DIRECTION_DOWN: {
-			result = ((((((widthorheight / 10.0) - 0.45) * 1.02) / max) * value) - 0.55);
-		}
+	} else {
+		ratio_from = 0.0;
 	}
-
-	return result;
+	ratio_to = (cur_value - min_value) / range_value;
 }
