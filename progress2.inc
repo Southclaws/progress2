@@ -31,14 +31,14 @@
 #define INVALID_PLAYER_BAR_VALUE		(Float:0xFFFFFFFF)
 #define INVALID_PLAYER_BAR_ID			(PlayerBar:-1)
 
-enum {
+enum progressbar_direction {
 	BAR_DIRECTION_RIGHT,
 	BAR_DIRECTION_LEFT,
 	BAR_DIRECTION_HORIZONTAL_FROM_0,
 	BAR_DIRECTION_UP,
 	BAR_DIRECTION_DOWN,
 	BAR_DIRECTION_VERTICAL_FROM_0,
-}
+};
 
 enum E_BAR_DATA {
 	bool:is_created,
@@ -53,7 +53,7 @@ enum E_BAR_DATA {
 	Float:pbar_progressValue,
 	Float:E_PADDING_X,
 	Float:E_PADDING_Y,
-	pbar_direction
+	progressbar_direction:pbar_direction
 }
 
 static const Float:direction_size_mult[] = {
@@ -116,7 +116,7 @@ forward PlayerBar:CreatePlayerProgressBar(
 	const Float:width = 55.5, const Float:height = 3.2,
 	const colour = 0xFF1C1CFF,
 	const Float:max = 100.0,
-	const direction = BAR_DIRECTION_RIGHT
+	const progressbar_direction:direction = BAR_DIRECTION_RIGHT
 );
 forward Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid);
 
@@ -126,7 +126,7 @@ stock PlayerBar:CreatePlayerProgressBar(
 	const Float:width = 55.5, const Float:height = 3.2,
 	const colour = 0xFF1C1CFF,
 	const Float:max = 100.0,
-	const direction = BAR_DIRECTION_RIGHT
+	const progressbar_direction:direction = BAR_DIRECTION_RIGHT
 ) {
 	if( !IsPlayerConnected(playerid) ) {
 		#if(defined _logger_included)
@@ -374,7 +374,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	new
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
-		direction = pbar_Data[playerid][barid][pbar_direction],
+		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
 		Float:ratio_to,
 		Float:boundry_size,
 		Float:adopted_size,
@@ -423,15 +423,15 @@ stock Float:GetPlayerProgressBarValue(const playerid, const PlayerBar:barid) {
 }
 
 // pbar_direction
-stock GetPlayerProgressBarDirection(const playerid, const PlayerBar:barid) {
+stock progressbar_direction:GetPlayerProgressBarDirection(const playerid, const PlayerBar:barid) {
 	if( !IsValidPlayerProgressBar(playerid, barid) ) {
-		return 0;
+		return progressbar_direction:BAR_DIRECTION_RIGHT;
 	}
 
 	return pbar_Data[playerid][barid][pbar_direction];
 }
 
-stock SetPlayerProgressBarDirection(const playerid, const PlayerBar:barid, const direction) {
+stock SetPlayerProgressBarDirection(const playerid, const PlayerBar:barid, const progressbar_direction:direction) {
 	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return 0;
 	}
@@ -484,7 +484,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
-		direction = pbar_Data[playerid][barid][pbar_direction],
+		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
 		color = pbar_Data[playerid][barid][pbar_colour],
 		Float:outer_pos_x2, Float:outer_pos_y2,	// 'back' pos (right bottom corner)
 		Float:inner_pos_x1, Float:inner_pos_y1,	// 'fill' pos (left upper corner)
@@ -616,7 +616,7 @@ stock DestroyAllPlayerProgressBars(const playerid) {
 	return 1;
 }
 
-static stock bar_getRatios(const direction, const Float:cur_value, const Float:min_value, const Float:max_value, &Float:ratio_from, &Float:ratio_to) {
+static stock bar_getRatios(const progressbar_direction:direction, const Float:cur_value, const Float:min_value, const Float:max_value, &Float:ratio_from, &Float:ratio_to) {
 	new Float:range_value = max_value - min_value;
 	if( direction == BAR_DIRECTION_HORIZONTAL_FROM_0 || direction == BAR_DIRECTION_VERTICAL_FROM_0 ) {	// From 0.
 		if( max_value < 0.0 ) {
