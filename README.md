@@ -42,6 +42,10 @@ Include in your code and begin using the library:
   * Bar direction bottom to top
 * `BAR_DIRECTION_DOWN`:
   * Bar direction top to bottom
+* `BAR_DIRECTION_HORIZONTAL_FROM_0`
+  * Bar direction left to right and starts from 0.0 in case min_value and max_value have different signs.
+* `BAR_DIRECTION_VERTICAL_FROM_0`
+  * Bar direction down to up and starts from 0.0 in case min_value and max_value have different signs.
 
 ### Functions
 
@@ -71,6 +75,10 @@ Include in your code and begin using the library:
   * Returns the colour of a progress bar.
 * `SetPlayerProgressBarColour(playerid, PlayerBar:barid, colour)`:
   * Sets the colour of a progress bar.
+* `Float:GetPlayerProgressBarMinValue(playerid, PlayerBar:barid)`
+  * Returns the minumum value of a progress bar.
+* `SetPlayerProgressBarMinValue(playerid, PlayerBar:barid, Float:min_value)`
+  * Sets the minumum value that a progress bar represents.
 * `Float:GetPlayerProgressBarMaxValue(playerid, PlayerBar:barid)`:
   * Returns the maximum value of a progress bar.
 * `SetPlayerProgressBarMaxValue(playerid, PlayerBar:barid, Float:max)`:
@@ -79,10 +87,14 @@ Include in your code and begin using the library:
   * Returns the value a progress bar represents.
 * `SetPlayerProgressBarValue(playerid, PlayerBar:barid, Float:value)`:
   * Sets the value a progress bar represents.
-* `GetPlayerProgressBarDirection(playerid, PlayerBar:barid)`:
+* `progressbar_direction:GetPlayerProgressBarDirection(playerid, PlayerBar:barid)`:
   * Returns the direction of a progress bar.
-* `SetPlayerProgressBarDirection(playerid, PlayerBar:barid, direction)`:
+* `SetPlayerProgressBarDirection(playerid, PlayerBar:barid, progressbar_direction:direction)`:
   * Updates the direction for a progress bar and re-renders it.
+* `GetPlayerProgressBarPadding(playerid, PlayerBar:barid, &Float:padding_x, &Float:padding_y)`
+  * Receives current padding for both dimensions.
+* `SetPlayerProgressBarPadding(playerid, PlayerBar:barid, Float:padding_x, Float:padding_y)`
+  * Updates current padding for both dimensions.
 
 ### Internal
 
