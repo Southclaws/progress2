@@ -71,6 +71,21 @@ enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_main
 }
 
+enum E_PROGRESSBAR_BOUNDRY {
+	Float:E_PBAR_BACKGROUND_POS_X,
+	Float:E_PBAR_BACKGROUND_POS_Y,
+	Float:E_PBAR_BACKGROUND_RIGHT,
+	Float:E_PBAR_BACKGROUND_HEIGHT,
+	Float:E_PBAR_FILLER_POS_X,
+	Float:E_PBAR_FILLER_POS_Y,
+	Float:E_PBAR_FILLER_RIGHT,
+	Float:E_PBAR_FILLER_HEIGHT,
+	Float:E_PBAR_VALUE_POS_X,
+	Float:E_PBAR_VALUE_POS_Y,
+	Float:E_PBAR_VALUE_RIGHT,
+	Float:E_PBAR_VALUE_HEIGHT,
+};
+
 static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
 new
@@ -372,45 +387,37 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	}
 
 	new
+		boundry[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
-		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
-		Float:ratio_to,
-		Float:boundry_size,
-		Float:adopted_size,
-		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
+		color = pbar_Data[playerid][barid][pbar_colour],
+		PlayerText:ptd_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
 	if( value < min_value ) {
 		value = min_value;
 	} else if( value > max_value ) {
 		value = max_value;
 	}
-	ratio_to = (value - min_value) / (max_value - min_value);
-
-	if( direction == BAR_DIRECTION_RIGHT || direction == BAR_DIRECTION_LEFT ) {
-		boundry_size = pbar_Data[playerid][barid][pbar_width];
-	} else {
-		boundry_size = pbar_Data[playerid][barid][pbar_height];
-	}
-	adopted_size = boundry_size * ratio_to * direction_size_mult[direction];
-
-	PlayerTextDrawUseBox(playerid, ptr_main, value > min_value);
-
 	pbar_Data[playerid][barid][pbar_progressValue] = value;
+	PlayerBarUI_computeBoundry(playerid, barid, boundry);
 
-	switch(direction) {
-		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT, BAR_DIRECTION_HORIZONTAL_FROM_0: {
-			PlayerTextDrawTextSize(playerid, ptr_main, adopted_size, 0.0);
-		}
-		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN, BAR_DIRECTION_VERTICAL_FROM_0: {
-			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0, adopted_size);
-		}
-	}
+	PlayerTextDrawDestroy(playerid, ptd_main);
+
+	ptd_main = CreatePlayerTextDraw(
+		playerid,
+		boundry[E_PBAR_VALUE_POS_X],
+		boundry[E_PBAR_VALUE_POS_Y],
+		"_"
+	);
+	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
+	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+	PlayerTextDrawUseBox(playerid, ptd_main, (value > min_value));
+	SetPlayerProgressBarColour(playerid, barid, color);
+	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
 		ShowPlayerProgressBar(playerid, barid);
 	}
-
 	return 1;
 }
 
@@ -630,4 +637,95 @@ static stock bar_getRatios(const progressbar_direction:direction, const Float:cu
 		ratio_from = 0.0;
 	}
 	ratio_to = (cur_value - min_value) / range_value;
+}
+
+static stock _normalise_range_f(&Float:value_a, &Float:value_b) {
+	if( value_a > value_b ) {
+		new Float:temp_value = value_b;
+		value_b = value_a;
+		value_a = temp_value;
+	}
+}
+
+static stock PlayerBarUI_computeBoundry(const playerid, const PlayerBar:barid, boundry[E_PROGRESSBAR_BOUNDRY]) {
+	new
+		Float:pos_x, Float:pos_y,
+		Float:padding_x, Float:padding_y,
+		Float:width = pbar_Data[playerid][barid][pbar_width],
+		Float:height = pbar_Data[playerid][barid][pbar_height],
+		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
+		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
+		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
+		Float:outer_pos_x2, Float:outer_pos_y2,	// 'back' pos (right bottom corner)
+		Float:inner_pos_x1, Float:inner_pos_y1,	// 'fill' pos (left upper corner)
+		Float:inner_pos_x2, Float:inner_pos_y2,	// 'fill' pos (right bottom corner)
+		Float:inner_size_x, Float:inner_size_y,	// 'fill' size
+		Float:value_pos_x1, Float:value_pos_y1,
+		Float:value_pos_x2, Float:value_pos_y2,
+		Float:size_multiplier = direction_size_mult[direction],
+		bool:is_vertical = (direction > BAR_DIRECTION_HORIZONTAL_FROM_0),
+		Float:ratio_from, Float:ratio_to
+	;
+	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
+	GetPlayerProgressBarPadding(playerid, barid, padding_x, padding_y);
+	//	Computing normalized sizes and corner positions in canvas pixels.
+	outer_pos_x2 = pos_x + width;
+	outer_pos_y2 = pos_y + height;
+	inner_pos_x1 = pos_x + padding_x;
+	inner_pos_x2 = outer_pos_x2 - padding_x;
+	inner_pos_y1 = pos_y + padding_y;
+	inner_pos_y2 = outer_pos_y2 - padding_y;
+	inner_size_x = inner_pos_x2 - inner_pos_x1;
+	inner_size_y = inner_pos_y2 - inner_pos_y1;
+	bar_getRatios(direction, cur_value, min_value, max_value, ratio_from, ratio_to);
+	ratio_from *= size_multiplier;
+	ratio_to *= size_multiplier;
+	if( is_vertical ) {
+		value_pos_x1 = inner_pos_x1;
+		value_pos_x2 = inner_pos_x2;
+	} else {	// is horizontal.
+		value_pos_y1 = inner_pos_y1;
+		value_pos_y2 = inner_pos_y2;
+	}
+	switch(direction) {
+		case BAR_DIRECTION_RIGHT:				{ value_pos_x1 = inner_pos_x1; }
+		case BAR_DIRECTION_LEFT:				{ value_pos_x1 = inner_pos_x2; }
+		case BAR_DIRECTION_HORIZONTAL_FROM_0:	{ value_pos_x1 = inner_pos_x1; }
+		case BAR_DIRECTION_UP:					{ value_pos_y1 = inner_pos_y2; }
+		case BAR_DIRECTION_DOWN:				{ value_pos_y1 = inner_pos_y1; }
+		case BAR_DIRECTION_VERTICAL_FROM_0:		{ value_pos_y1 = inner_pos_y2; }
+	}
+	if( is_vertical ) {
+		value_pos_y2 = value_pos_y1;
+		value_pos_y1 += inner_size_y * ratio_from;
+		value_pos_y2 += inner_size_y * ratio_to;
+	} else {
+		value_pos_x2 = value_pos_x1;
+		value_pos_x1 += inner_size_x * ratio_from;
+		value_pos_x2 += inner_size_x * ratio_to;
+	}
+	// normalising ranges.
+	{
+		_normalise_range_f(value_pos_x1, value_pos_x2);
+		_normalise_range_f(value_pos_y1, value_pos_y2);
+	}
+	new Float:correction_x = 1.25;
+	value_pos_x1 += correction_x;
+	value_pos_x2 -= correction_x;
+	inner_pos_x1 += correction_x;
+	inner_pos_x2 -= correction_x;
+
+	boundry[E_PBAR_BACKGROUND_POS_X] = pos_x;
+	boundry[E_PBAR_BACKGROUND_POS_Y] = pos_y;
+	boundry[E_PBAR_BACKGROUND_RIGHT] = outer_pos_x2;
+	boundry[E_PBAR_BACKGROUND_HEIGHT] = 0.1 * (outer_pos_y2 - pos_y);
+	boundry[E_PBAR_FILLER_POS_X] = inner_pos_x1;
+	boundry[E_PBAR_FILLER_POS_Y] = inner_pos_y1;
+	boundry[E_PBAR_FILLER_RIGHT] = inner_pos_x2;
+	boundry[E_PBAR_FILLER_HEIGHT] = 0.1 * (inner_pos_y2 - inner_pos_y1);
+	boundry[E_PBAR_VALUE_POS_X] = value_pos_x1;
+	boundry[E_PBAR_VALUE_POS_Y] = value_pos_y1;
+	boundry[E_PBAR_VALUE_RIGHT] = value_pos_x2;
+	boundry[E_PBAR_VALUE_HEIGHT] = 0.1 * (value_pos_y2 - value_pos_y1);
 }
