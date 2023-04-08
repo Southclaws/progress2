@@ -483,101 +483,29 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
 	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
 	new
-		Float:pos_x,
-		Float:pos_y,
-		Float:padding_x, Float:padding_y,
-		Float:width = pbar_Data[playerid][barid][pbar_width],
-		Float:height = pbar_Data[playerid][barid][pbar_height],
+		boundry[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
 		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
 		color = pbar_Data[playerid][barid][pbar_colour],
-		Float:outer_pos_x2, Float:outer_pos_y2,	// 'back' pos (right bottom corner)
-		Float:inner_pos_x1, Float:inner_pos_y1,	// 'fill' pos (left upper corner)
-		Float:inner_pos_x2, Float:inner_pos_y2,	// 'fill' pos (right bottom corner)
-		Float:inner_size_x, Float:inner_size_y,	// 'fill' size
-		Float:value_pos_x1, Float:value_pos_y1,
-		Float:value_pos_x2, Float:value_pos_y2,
-		Float:value_size_y,
-		Float:size_multiplier = direction_size_mult[direction],
-		bool:is_vertical = (direction > BAR_DIRECTION_HORIZONTAL_FROM_0),
-		Float:ratio_from,
-		Float:ratio_to,
 		PlayerText:ptd_back,
 		PlayerText:ptd_fill,
 		PlayerText:ptd_main
 	;
-	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
-	GetPlayerProgressBarPadding(playerid, barid, padding_x, padding_y);
 	//	Computing normalized sizes and corner positions in canvas pixels.
-	outer_pos_x2 = pos_x + width;
-	outer_pos_y2 = pos_y + height;
-	inner_pos_x1 = pos_x + padding_x;
-	inner_pos_x2 = outer_pos_x2 - padding_x;
-	inner_pos_y1 = pos_y + padding_y;
-	inner_pos_y2 = outer_pos_y2 - padding_y;
-	inner_size_x = inner_pos_x2 - inner_pos_x1;
-	inner_size_y = inner_pos_y2 - inner_pos_y1;
-	bar_getRatios(direction, cur_value, min_value, max_value, ratio_from, ratio_to);
-	ratio_from *= size_multiplier;
-	ratio_to *= size_multiplier;
-	if( is_vertical ) {
-		value_pos_x1 = inner_pos_x1;
-		value_pos_x2 = inner_pos_x2;
-	} else {	// is horizontal.
-		value_pos_y1 = inner_pos_y1;
-		value_pos_y2 = inner_pos_y2;
-	}
-	switch(direction) {
-		case BAR_DIRECTION_RIGHT:				{ value_pos_x1 = inner_pos_x1; }
-		case BAR_DIRECTION_LEFT:				{ value_pos_x1 = inner_pos_x2; }
-		case BAR_DIRECTION_HORIZONTAL_FROM_0:	{ value_pos_x1 = inner_pos_x1; }
-		case BAR_DIRECTION_UP:					{ value_pos_y1 = inner_pos_y2; }
-		case BAR_DIRECTION_DOWN:				{ value_pos_y1 = inner_pos_y1; }
-		case BAR_DIRECTION_VERTICAL_FROM_0:		{ value_pos_y1 = inner_pos_y2; }
-	}
-	if( is_vertical ) {
-		value_pos_y2 = value_pos_y1;
-		value_pos_y1 += inner_size_y * ratio_from;
-		value_pos_y2 += inner_size_y * ratio_to;
-	} else {
-		value_pos_x2 = value_pos_x1;
-		value_pos_x1 += inner_size_x * ratio_from;
-		value_pos_x2 += inner_size_x * ratio_to;
-	}
-	// normalising ranges.
-	{
-		new Float:temp_value;
-		if( value_pos_x1 > value_pos_x2 ) {
-			temp_value = value_pos_x2;
-			value_pos_x2 = value_pos_x1;
-			value_pos_x1 = temp_value;
-		}
-		if( value_pos_y1 > value_pos_y2 ) {
-			temp_value = value_pos_y2;
-			value_pos_y2 = value_pos_y1;
-			value_pos_y1 = temp_value;
-		}
-	}
-	new Float:correction_x = 1.25;
-	value_pos_x1 += correction_x;
-	value_pos_x2 -= correction_x;
-	inner_pos_x1 += correction_x;
-	inner_pos_x2 -= correction_x;
+	PlayerBarUI_computeBoundry(playerid, barid, boundry);
 
-	value_size_y = value_pos_y2 - value_pos_y1;
+	ptd_back = CreatePlayerTextDraw(playerid, boundry[E_PBAR_BACKGROUND_POS_X], boundry[E_PBAR_BACKGROUND_POS_Y], "_");
+	ptd_fill = CreatePlayerTextDraw(playerid, boundry[E_PBAR_FILLER_POS_X], boundry[E_PBAR_FILLER_POS_Y], "_");
+	ptd_main = CreatePlayerTextDraw(playerid, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y], "_");
+	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
+	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
 
-	ptd_back = CreatePlayerTextDraw(playerid, pos_x, pos_y, "_");
-	ptd_fill = CreatePlayerTextDraw(playerid, inner_pos_x1, inner_pos_y1, "_");
-	ptd_main = CreatePlayerTextDraw(playerid, value_pos_x1, value_pos_y1, "_");
-	PlayerTextDrawTextSize(playerid, ptd_main, value_pos_x2, 0.0);
-	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, value_size_y / 10.0);
-
-	PlayerTextDrawTextSize		(playerid, ptd_back, outer_pos_x2, 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
-	PlayerTextDrawTextSize		(playerid, ptd_fill, inner_pos_x2, 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, inner_size_y / 10.0);
+	PlayerTextDrawTextSize		(playerid, ptd_back, boundry[E_PBAR_BACKGROUND_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, boundry[E_PBAR_BACKGROUND_HEIGHT]);
+	PlayerTextDrawTextSize		(playerid, ptd_fill, boundry[E_PBAR_FILLER_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, boundry[E_PBAR_FILLER_HEIGHT]);
 
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
 	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
