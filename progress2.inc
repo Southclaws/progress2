@@ -95,6 +95,7 @@ new
 	#endif
 	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA]
 ;
+static bool:is_progressbar_initialised = false;
 
 //	Reset info of player progress bar.
 stock PlayerBarUI_ResetPlayerItem(const playerid, const PlayerBar:barid) {
@@ -115,6 +116,7 @@ stock PlayerBarUI_ResetAll() {
 	for(new playerid = 0; playerid < MAX_PLAYERS; ++playerid) {
 		PlayerBarUI_ResetPlayer(playerid);
 	}
+	is_progressbar_initialised = true;
 }
 //	Returns free player progress bar.
 stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
@@ -164,6 +166,9 @@ stock PlayerBar:CreatePlayerProgressBar(
 			Logger_I("playerid", playerid));
 		#endif
 		return INVALID_PLAYER_BAR_ID;
+	}
+	if( !is_progressbar_initialised ) {	// auto initialisation at first progress bar creation.
+		PlayerBarUI_ResetAll();
 	}
 
 	#if(defined _INC_y_iterate)
@@ -571,6 +576,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 }
 #if(defined _INC_y_hooks)
 hook OnScriptInit() {
+	PlayerBarUI_ResetAll();
 	#if(defined _INC_y_iterate)
 	Iter_Init(pbar_Index);
 	#endif
