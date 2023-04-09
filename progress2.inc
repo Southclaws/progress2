@@ -68,7 +68,8 @@ static const Float:direction_size_mult[] = {
 enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_back,
 	PlayerText:pbar_fill,
-	PlayerText:pbar_main
+	PlayerText:pbar_main,
+	PlayerText:pbar_unused	// for 16-byte alignment
 }
 
 enum E_PROGRESSBAR_BOUNDRY {
@@ -86,7 +87,7 @@ enum E_PROGRESSBAR_BOUNDRY {
 	Float:E_PBAR_VALUE_HEIGHT,
 };
 
-static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
+static PlayerText:pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
 new
 	#if(defined _INC_y_iterate)
@@ -215,9 +216,7 @@ stock DestroyPlayerProgressBar(const playerid, const PlayerBar:barid) {
 		return 0;
 	}
 
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
+	_ptextdraw_destroy_array(playerid, pbar_TextDraw[playerid][barid]);
 
 	pbar_Data[playerid][barid][is_created] = false;
 	#if(defined _INC_y_iterate)
@@ -495,10 +494,8 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		return false;
 	}
 
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
 	new
+		PlayerText:old_textdraw_array[E_BAR_TEXT_DRAW],
 		boundry[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
@@ -510,6 +507,9 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		PlayerText:ptd_fill,
 		PlayerText:ptd_main
 	;
+	old_textdraw_array = pbar_TextDraw[playerid][barid];
+	_ptextdraw_destroy_array(playerid, old_textdraw_array);
+
 	//	Computing normalized sizes and corner positions in canvas pixels.
 	draw_main = PlayerBarUI_isNeedToDrawValue(direction, cur_value, min_value, max_value);
 	PlayerBarUI_computeBoundry(playerid, barid, boundry);
@@ -517,6 +517,36 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	ptd_back = CreatePlayerTextDraw(playerid, boundry[E_PBAR_BACKGROUND_POS_X], boundry[E_PBAR_BACKGROUND_POS_Y], "_");
 	ptd_fill = CreatePlayerTextDraw(playerid, boundry[E_PBAR_FILLER_POS_X], boundry[E_PBAR_FILLER_POS_Y], "_");
 	ptd_main = CreatePlayerTextDraw(playerid, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y], "_");
+
+	//	Fixing very special bug:
+	//		Past versions of progress bars never hide destroyed textdraws from previous state (PlayerTextDrawDestroy doesn't hiding anything).
+	//		ProgressBar was always hopes that textdraw IDs will be same after bar recreation.
+	//		That can lead to some of bar's textdraw still drawn on player screen.
+	//		You can reproduce:
+	//		1) Create some of your textdraws.
+	//		2) Create progress bar.
+	//		3) Remove some previous textdraws.
+	//		4) Recreate progress bar.
+	//		5) Do not create & show textdraws anymore.
+	{
+		new E_BAR_TEXT_DRAW:td_slot_old,
+			E_BAR_TEXT_DRAW:td_slot_new,
+			PlayerText:old_textdraw_item
+		;
+		for(td_slot_old = E_BAR_TEXT_DRAW:0; td_slot_old < E_BAR_TEXT_DRAW:sizeof(old_textdraw_array); ++td_slot_old) {
+			old_textdraw_item = old_textdraw_array[td_slot_old];
+			for(td_slot_new = E_BAR_TEXT_DRAW:0; td_slot_new < E_BAR_TEXT_DRAW:sizeof(old_textdraw_array); ++td_slot_new) {
+				if(
+					old_textdraw_item != ptd_back &&
+					old_textdraw_item != ptd_fill &&
+					old_textdraw_item != ptd_main
+				) {
+					PlayerTextDrawHide(playerid, old_textdraw_item);	// Hiding after destroying? Just send RPC.
+				}
+			}
+		}
+	}
+
 	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
 	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
 
@@ -583,6 +613,12 @@ static stock bar_getRatios(const progressbar_direction:direction, const Float:cu
 		ratio_from = 0.0;
 	}
 	ratio_to = (cur_value - min_value) / range_value;
+}
+
+static stock _ptextdraw_destroy_array(const playerid, const PlayerText:ptd_array[E_BAR_TEXT_DRAW]) {
+	for(new E_BAR_TEXT_DRAW:ptd_slot = E_BAR_TEXT_DRAW:0; ptd_slot < E_BAR_TEXT_DRAW:3; ++ptd_slot) {
+		PlayerTextDrawDestroy(playerid, ptd_array[ptd_slot]);
+	}
 }
 
 static stock _normalise_range_f(&Float:value_a, &Float:value_b) {
