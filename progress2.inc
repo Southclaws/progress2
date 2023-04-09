@@ -124,6 +124,20 @@ stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
 	}
 	return INVALID_PLAYER_BAR_ID;
 }
+//	Returns true if value-textdraw needs to be drawn due of current value relation to min/max values.
+static stock bool:PlayerBarUI_isNeedToDrawValue(const progressbar_direction:direction, const Float:cur_value, const Float:min_value, const Float:max_value) {
+	if( direction == BAR_DIRECTION_HORIZONTAL_FROM_0 || direction == BAR_DIRECTION_VERTICAL_FROM_0 ) {
+		if( max_value < 0.0 ) {
+			return (cur_value < max_value);
+		} else if( min_value > 0.0 ) {
+			return (cur_value > min_value);
+		} else {
+			return (floatabs(cur_value) > 0.001 * (max_value - min_value));
+		}
+	} else {
+		return (cur_value > min_value);
+	}
+}
 
 forward PlayerBar:CreatePlayerProgressBar(
 	const playerid,
@@ -385,11 +399,12 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return 0;
 	}
-
 	new
 		boundry[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
+		bool:draw_main,
 		color = pbar_Data[playerid][barid][pbar_colour],
 		PlayerText:ptd_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
@@ -399,6 +414,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		value = max_value;
 	}
 	pbar_Data[playerid][barid][pbar_progressValue] = value;
+	draw_main = PlayerBarUI_isNeedToDrawValue(direction, value, min_value, max_value);
 	PlayerBarUI_computeBoundry(playerid, barid, boundry);
 
 	PlayerTextDrawDestroy(playerid, ptd_main);
@@ -411,7 +427,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	);
 	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
 	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
-	PlayerTextDrawUseBox(playerid, ptd_main, (value > min_value));
+	PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
 	SetPlayerProgressBarColour(playerid, barid, color);
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 
@@ -488,12 +504,14 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
 		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
+		bool:draw_main,
 		color = pbar_Data[playerid][barid][pbar_colour],
 		PlayerText:ptd_back,
 		PlayerText:ptd_fill,
 		PlayerText:ptd_main
 	;
 	//	Computing normalized sizes and corner positions in canvas pixels.
+	draw_main = PlayerBarUI_isNeedToDrawValue(direction, cur_value, min_value, max_value);
 	PlayerBarUI_computeBoundry(playerid, barid, boundry);
 
 	ptd_back = CreatePlayerTextDraw(playerid, boundry[E_PBAR_BACKGROUND_POS_X], boundry[E_PBAR_BACKGROUND_POS_Y], "_");
@@ -512,7 +530,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 	PlayerTextDrawUseBox		(playerid, ptd_back, true);
 	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
-	PlayerTextDrawUseBox		(playerid, ptd_main, true);
+	PlayerTextDrawUseBox		(playerid, ptd_main, draw_main);
 	SetPlayerProgressBarColour(playerid, barid, color);
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
