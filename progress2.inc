@@ -26,8 +26,20 @@
 
 #tryinclude <YSI_Coding\y_hooks>
 
+#if defined MAX_PLAYER_BARS
+	#if (MAX_PLAYER_BARS - PlayerBar:0)==PlayerBar:0
+		#error You forgot to set value of MAX_PLAYER_BARS. Type something like: #define MAX_PLAYER_BARS (PlayerBar:30).
+	#endif
+	#if (MAX_PLAYER_BARS < PlayerBar:1)
+		#error You are trying to allocate invalid number of PlayerBars. Set value of MAX_PLAYER_BARS greather than 0.
+	#elseif MAX_PLAYER_BARS > PlayerBar:(MAX_PLAYER_TEXT_DRAWS / 3)
+		#error You are trying to allocate too many PlayerBars. Set value of MAX_PLAYER_BARS below or equals to (MAX_PLAYER_TEXT_DRAWS/3).
+	#endif
+#else
+	#define MAX_PLAYER_BARS					(PlayerBar:(_:MAX_PLAYER_TEXT_DRAWS / 3))
+#endif
 
-#define MAX_PLAYER_BARS					(PlayerBar:(_:MAX_PLAYER_TEXT_DRAWS / 3))
+
 #define INVALID_PLAYER_BAR_VALUE		(Float:0xFFFFFFFF)
 #define INVALID_PLAYER_BAR_ID			(PlayerBar:-1)
 
