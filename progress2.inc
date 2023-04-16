@@ -421,19 +421,42 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	draw_main = PlayerBarUI_isNeedToDrawValue(direction, value, min_value, max_value);
 	PlayerBarUI_computeBoundry(playerid, barid, boundry);
 
-	PlayerTextDrawDestroy(playerid, ptd_main);
-
-	ptd_main = CreatePlayerTextDraw(
-		playerid,
-		boundry[E_PBAR_VALUE_POS_X],
-		boundry[E_PBAR_VALUE_POS_Y],
-		"_"
-	);
-	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
-	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
-	PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
+	#if defined PlayerTextDrawSetPos
+	{
+		PlayerTextDrawSetPos(playerid, ptd_main, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y]);
+		PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
+		PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+		PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
+	}
+	#else
+	{	// Textdraw set position not found. Set with recreation.
+		PlayerTextDrawDestroy(playerid, ptd_main);
+		ptd_main = CreatePlayerTextDraw(
+			playerid,
+			boundry[E_PBAR_VALUE_POS_X],
+			boundry[E_PBAR_VALUE_POS_Y],
+			"_"
+		);
+		new PlayerText:ptd_back = pbar_TextDraw[playerid][barid][pbar_back],
+			PlayerText:ptd_fill = pbar_TextDraw[playerid][barid][pbar_fill]
+		;
+		if(	// Check in new main textdraw is not under filler/background.
+			(ptd_fill != PlayerText:INVALID_TEXT_DRAW && ptd_fill < ptd_main) ||
+			(ptd_back != PlayerText:INVALID_TEXT_DRAW && ptd_back < ptd_main)
+		) {
+			PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
+			PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+			PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
+			pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
+		} else {	// Rare case: main/value textdraw was created UNDER(win lower ID than) filler/background textdraw -> recreate whole bar again.
+			PlayerTextDrawDestroy(playerid, ptd_back);
+			PlayerTextDrawDestroy(playerid, ptd_fill);
+			PlayerTextDrawDestroy(playerid, ptd_main);
+			PlayerBarUI_createGeometry(playerid, barid, boundry, color, draw_main);
+		}
+	}
+	#endif
 	SetPlayerProgressBarColour(playerid, barid, color);
-	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
 		ShowPlayerProgressBar(playerid, barid);
@@ -490,6 +513,28 @@ stock SetPlayerProgressBarPadding(const playerid, const PlayerBar:barid, const F
 /*
 	Internal
 */
+static PlayerBarUI_createGeometry(const playerid, const PlayerBar:barid, const boundry[E_PROGRESSBAR_BOUNDRY], const color, const bool:draw_main) {
+	new PlayerText:ptd_back, PlayerText:ptd_fill, PlayerText:ptd_main;
+	ptd_back = CreatePlayerTextDraw(playerid, boundry[E_PBAR_BACKGROUND_POS_X], boundry[E_PBAR_BACKGROUND_POS_Y], "_");
+	PlayerTextDrawTextSize		(playerid, ptd_back, boundry[E_PBAR_BACKGROUND_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, boundry[E_PBAR_BACKGROUND_HEIGHT]);
+	PlayerTextDrawUseBox		(playerid, ptd_back, true);
+
+	ptd_fill = CreatePlayerTextDraw(playerid, boundry[E_PBAR_FILLER_POS_X], boundry[E_PBAR_FILLER_POS_Y], "_");
+	PlayerTextDrawTextSize		(playerid, ptd_fill, boundry[E_PBAR_FILLER_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, boundry[E_PBAR_FILLER_HEIGHT]);
+	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
+
+	ptd_main = CreatePlayerTextDraw(playerid, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y], "_");
+	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
+	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+	PlayerTextDrawUseBox		(playerid, ptd_main, draw_main);
+
+	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
+	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
+	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
+	SetPlayerProgressBarColour(playerid, barid, color);
+}
 
 _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	if(
@@ -519,9 +564,10 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	draw_main = PlayerBarUI_isNeedToDrawValue(direction, cur_value, min_value, max_value);
 	PlayerBarUI_computeBoundry(playerid, barid, boundry);
 
-	ptd_back = CreatePlayerTextDraw(playerid, boundry[E_PBAR_BACKGROUND_POS_X], boundry[E_PBAR_BACKGROUND_POS_Y], "_");
-	ptd_fill = CreatePlayerTextDraw(playerid, boundry[E_PBAR_FILLER_POS_X], boundry[E_PBAR_FILLER_POS_Y], "_");
-	ptd_main = CreatePlayerTextDraw(playerid, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y], "_");
+	PlayerBarUI_createGeometry(playerid, barid, boundry, color, draw_main);
+	ptd_back = pbar_TextDraw[playerid][barid][pbar_main];
+	ptd_fill = pbar_TextDraw[playerid][barid][pbar_fill];
+	ptd_main = pbar_TextDraw[playerid][barid][pbar_back];
 
 	//	Fixing very special bug:
 	//		Past versions of progress bars never hide destroyed textdraws from previous state (PlayerTextDrawDestroy doesn't hiding anything).
@@ -551,22 +597,6 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 			}
 		}
 	}
-
-	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
-	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
-
-	PlayerTextDrawTextSize		(playerid, ptd_back, boundry[E_PBAR_BACKGROUND_RIGHT], 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, boundry[E_PBAR_BACKGROUND_HEIGHT]);
-	PlayerTextDrawTextSize		(playerid, ptd_fill, boundry[E_PBAR_FILLER_RIGHT], 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, boundry[E_PBAR_FILLER_HEIGHT]);
-
-	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
-	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
-	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
-	PlayerTextDrawUseBox		(playerid, ptd_back, true);
-	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
-	PlayerTextDrawUseBox		(playerid, ptd_main, draw_main);
-	SetPlayerProgressBarColour(playerid, barid, color);
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
 		ShowPlayerProgressBar(playerid, barid);
