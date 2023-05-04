@@ -416,7 +416,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		return 0;
 	}
 	new
-		boundry[E_PROGRESSBAR_BOUNDRY],
+		boundary[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
@@ -431,13 +431,13 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	}
 	pbar_Data[playerid][barid][pbar_progressValue] = value;
 	draw_main = PlayerBarUI_isNeedToDrawValue(direction, value, min_value, max_value);
-	PlayerBarUI_computeBoundry(playerid, barid, boundry);
+	PlayerBarUI_computeBoundry(playerid, barid, boundary);
 
 	#if defined PlayerTextDrawSetPos
 	{
-		PlayerTextDrawSetPos(playerid, ptd_main, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y]);
-		PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
-		PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+		PlayerTextDrawSetPos(playerid, ptd_main, boundary[E_PBAR_VALUE_POS_X], boundary[E_PBAR_VALUE_POS_Y]);
+		PlayerTextDrawTextSize(playerid, ptd_main, boundary[E_PBAR_VALUE_RIGHT], 0.0);
+		PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
 		PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
 	}
 	#else
@@ -445,8 +445,8 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 		PlayerTextDrawDestroy(playerid, ptd_main);
 		ptd_main = CreatePlayerTextDraw(
 			playerid,
-			boundry[E_PBAR_VALUE_POS_X],
-			boundry[E_PBAR_VALUE_POS_Y],
+			boundary[E_PBAR_VALUE_POS_X],
+			boundary[E_PBAR_VALUE_POS_Y],
 			"_"
 		);
 		new PlayerText:ptd_back = pbar_TextDraw[playerid][barid][pbar_back],
@@ -456,15 +456,15 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 			(ptd_fill != PlayerText:INVALID_TEXT_DRAW && ptd_fill < ptd_main) ||
 			(ptd_back != PlayerText:INVALID_TEXT_DRAW && ptd_back < ptd_main)
 		) {
-			PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
-			PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+			PlayerTextDrawTextSize(playerid, ptd_main, boundary[E_PBAR_VALUE_RIGHT], 0.0);
+			PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
 			PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
 			pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
 		} else {	// Rare case: main/value textdraw was created UNDER(win lower ID than) filler/background textdraw -> recreate whole bar again.
 			PlayerTextDrawDestroy(playerid, ptd_back);
 			PlayerTextDrawDestroy(playerid, ptd_fill);
 			PlayerTextDrawDestroy(playerid, ptd_main);
-			PlayerBarUI_createGeometry(playerid, barid, boundry, color, draw_main);
+			PlayerBarUI_createGeometry(playerid, barid, boundary, color, draw_main);
 		}
 	}
 	#endif
@@ -525,21 +525,21 @@ stock SetPlayerProgressBarPadding(const playerid, const PlayerBar:barid, const F
 /*
 	Internal
 */
-static PlayerBarUI_createGeometry(const playerid, const PlayerBar:barid, const boundry[E_PROGRESSBAR_BOUNDRY], const color, const bool:draw_main) {
+static PlayerBarUI_createGeometry(const playerid, const PlayerBar:barid, const boundary[E_PROGRESSBAR_BOUNDRY], const color, const bool:draw_main) {
 	new PlayerText:ptd_back, PlayerText:ptd_fill, PlayerText:ptd_main;
-	ptd_back = CreatePlayerTextDraw(playerid, boundry[E_PBAR_BACKGROUND_POS_X], boundry[E_PBAR_BACKGROUND_POS_Y], "_");
-	PlayerTextDrawTextSize		(playerid, ptd_back, boundry[E_PBAR_BACKGROUND_RIGHT], 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, boundry[E_PBAR_BACKGROUND_HEIGHT]);
+	ptd_back = CreatePlayerTextDraw(playerid, boundary[E_PBAR_BACKGROUND_POS_X], boundary[E_PBAR_BACKGROUND_POS_Y], "_");
+	PlayerTextDrawTextSize		(playerid, ptd_back, boundary[E_PBAR_BACKGROUND_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, boundary[E_PBAR_BACKGROUND_HEIGHT]);
 	PlayerTextDrawUseBox		(playerid, ptd_back, true);
 
-	ptd_fill = CreatePlayerTextDraw(playerid, boundry[E_PBAR_FILLER_POS_X], boundry[E_PBAR_FILLER_POS_Y], "_");
-	PlayerTextDrawTextSize		(playerid, ptd_fill, boundry[E_PBAR_FILLER_RIGHT], 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, boundry[E_PBAR_FILLER_HEIGHT]);
+	ptd_fill = CreatePlayerTextDraw(playerid, boundary[E_PBAR_FILLER_POS_X], boundary[E_PBAR_FILLER_POS_Y], "_");
+	PlayerTextDrawTextSize		(playerid, ptd_fill, boundary[E_PBAR_FILLER_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, boundary[E_PBAR_FILLER_HEIGHT]);
 	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
 
-	ptd_main = CreatePlayerTextDraw(playerid, boundry[E_PBAR_VALUE_POS_X], boundry[E_PBAR_VALUE_POS_Y], "_");
-	PlayerTextDrawTextSize(playerid, ptd_main, boundry[E_PBAR_VALUE_RIGHT], 0.0);
-	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundry[E_PBAR_VALUE_HEIGHT]);
+	ptd_main = CreatePlayerTextDraw(playerid, boundary[E_PBAR_VALUE_POS_X], boundary[E_PBAR_VALUE_POS_Y], "_");
+	PlayerTextDrawTextSize(playerid, ptd_main, boundary[E_PBAR_VALUE_RIGHT], 0.0);
+	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
 	PlayerTextDrawUseBox		(playerid, ptd_main, draw_main);
 
 	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
@@ -558,7 +558,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 
 	new
 		PlayerText:old_textdraw_array[E_BAR_TEXT_DRAW],
-		boundry[E_PROGRESSBAR_BOUNDRY],
+		boundary[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
@@ -574,9 +574,9 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 
 	//	Computing normalized sizes and corner positions in canvas pixels.
 	draw_main = PlayerBarUI_isNeedToDrawValue(direction, cur_value, min_value, max_value);
-	PlayerBarUI_computeBoundry(playerid, barid, boundry);
+	PlayerBarUI_computeBoundry(playerid, barid, boundary);
 
-	PlayerBarUI_createGeometry(playerid, barid, boundry, color, draw_main);
+	PlayerBarUI_createGeometry(playerid, barid, boundary, color, draw_main);
 	ptd_back = pbar_TextDraw[playerid][barid][pbar_main];
 	ptd_fill = pbar_TextDraw[playerid][barid][pbar_fill];
 	ptd_main = pbar_TextDraw[playerid][barid][pbar_back];
@@ -677,7 +677,7 @@ static stock _normalise_range_f(&Float:value_a, &Float:value_b) {
 	}
 }
 
-static stock PlayerBarUI_computeBoundry(const playerid, const PlayerBar:barid, boundry[E_PROGRESSBAR_BOUNDRY]) {
+static stock PlayerBarUI_computeBoundry(const playerid, const PlayerBar:barid, boundary[E_PROGRESSBAR_BOUNDRY]) {
 	new
 		Float:pos_x, Float:pos_y,
 		Float:padding_x, Float:padding_y,
@@ -746,16 +746,16 @@ static stock PlayerBarUI_computeBoundry(const playerid, const PlayerBar:barid, b
 	inner_pos_x1 += correction_x;
 	inner_pos_x2 -= correction_x;
 
-	boundry[E_PBAR_BACKGROUND_POS_X] = pos_x;
-	boundry[E_PBAR_BACKGROUND_POS_Y] = pos_y;
-	boundry[E_PBAR_BACKGROUND_RIGHT] = outer_pos_x2;
-	boundry[E_PBAR_BACKGROUND_HEIGHT] = 0.1 * (outer_pos_y2 - pos_y);
-	boundry[E_PBAR_FILLER_POS_X] = inner_pos_x1;
-	boundry[E_PBAR_FILLER_POS_Y] = inner_pos_y1;
-	boundry[E_PBAR_FILLER_RIGHT] = inner_pos_x2;
-	boundry[E_PBAR_FILLER_HEIGHT] = 0.1 * (inner_pos_y2 - inner_pos_y1);
-	boundry[E_PBAR_VALUE_POS_X] = value_pos_x1;
-	boundry[E_PBAR_VALUE_POS_Y] = value_pos_y1;
-	boundry[E_PBAR_VALUE_RIGHT] = value_pos_x2;
-	boundry[E_PBAR_VALUE_HEIGHT] = 0.1 * (value_pos_y2 - value_pos_y1);
+	boundary[E_PBAR_BACKGROUND_POS_X] = pos_x;
+	boundary[E_PBAR_BACKGROUND_POS_Y] = pos_y;
+	boundary[E_PBAR_BACKGROUND_RIGHT] = outer_pos_x2;
+	boundary[E_PBAR_BACKGROUND_HEIGHT] = 0.1 * (outer_pos_y2 - pos_y);
+	boundary[E_PBAR_FILLER_POS_X] = inner_pos_x1;
+	boundary[E_PBAR_FILLER_POS_Y] = inner_pos_y1;
+	boundary[E_PBAR_FILLER_RIGHT] = inner_pos_x2;
+	boundary[E_PBAR_FILLER_HEIGHT] = 0.1 * (inner_pos_y2 - inner_pos_y1);
+	boundary[E_PBAR_VALUE_POS_X] = value_pos_x1;
+	boundary[E_PBAR_VALUE_POS_Y] = value_pos_y1;
+	boundary[E_PBAR_VALUE_RIGHT] = value_pos_x2;
+	boundary[E_PBAR_VALUE_HEIGHT] = 0.1 * (value_pos_y2 - value_pos_y1);
 }
