@@ -80,8 +80,7 @@ static const Float:direction_size_mult[] = {
 enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_back,
 	PlayerText:pbar_fill,
-	PlayerText:pbar_main,
-	PlayerText:pbar_unused	// for 16-byte alignment
+	PlayerText:pbar_main
 }
 
 enum E_PROGRESSBAR_BOUNDRY {
