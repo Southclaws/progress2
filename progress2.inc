@@ -460,7 +460,7 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 			PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
 			PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
 			pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
-		} else {	// Rare case: main/value textdraw was created UNDER(win lower ID than) filler/background textdraw -> recreate whole bar again.
+		} else {	// Rare case: main/value textdraw was created UNDER(with lower ID than) filler/background textdraw -> recreate whole bar again.
 			PlayerTextDrawDestroy(playerid, ptd_back);
 			PlayerTextDrawDestroy(playerid, ptd_fill);
 			PlayerTextDrawDestroy(playerid, ptd_main);
