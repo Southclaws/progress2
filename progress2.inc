@@ -16,9 +16,12 @@
 
 #tryinclude <open.mp>
 
-#if !defined PlayerTextDrawBoxColour
+#if !defined _INC_open_mp
 	#include <a_samp>
-	#define PlayerTextDrawBoxColour PlayerTextDrawBoxColor
+
+	#if !defined PlayerTextDrawBoxColour
+		#define PlayerTextDrawBoxColour PlayerTextDrawBoxColor
+	#endif
 #endif
 
 #tryinclude <logger>
