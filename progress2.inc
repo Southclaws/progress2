@@ -29,8 +29,20 @@
 
 #tryinclude <YSI_Coding\y_hooks>
 
+#if defined MAX_PLAYER_BARS
+	#if (MAX_PLAYER_BARS - PlayerBar:0)==PlayerBar:0
+		#error You forgot to set value of MAX_PLAYER_BARS. Type something like: #define MAX_PLAYER_BARS (PlayerBar:30).
+	#endif
+	#if (MAX_PLAYER_BARS < PlayerBar:1)
+		#error You are trying to allocate invalid number of PlayerBars. Set value of MAX_PLAYER_BARS greather than 0.
+	#elseif MAX_PLAYER_BARS > PlayerBar:(MAX_PLAYER_TEXT_DRAWS / 3)
+		#error You are trying to allocate too many PlayerBars. Set value of MAX_PLAYER_BARS below or equals to (MAX_PLAYER_TEXT_DRAWS/3).
+	#endif
+#else
+	#define MAX_PLAYER_BARS					(PlayerBar:(_:MAX_PLAYER_TEXT_DRAWS / 3))
+#endif
 
-#define MAX_PLAYER_BARS					(PlayerBar:(_:MAX_PLAYER_TEXT_DRAWS / 3))
+
 #define INVALID_PLAYER_BAR_VALUE		(Float:0xFFFFFFFF)
 #define INVALID_PLAYER_BAR_ID			(PlayerBar:-1)
 
@@ -74,7 +86,22 @@ enum E_BAR_TEXT_DRAW {
 	PlayerText:pbar_main
 }
 
-static pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
+enum E_PROGRESSBAR_BOUNDRY {
+	Float:E_PBAR_BACKGROUND_POS_X,
+	Float:E_PBAR_BACKGROUND_POS_Y,
+	Float:E_PBAR_BACKGROUND_RIGHT,
+	Float:E_PBAR_BACKGROUND_HEIGHT,
+	Float:E_PBAR_FILLER_POS_X,
+	Float:E_PBAR_FILLER_POS_Y,
+	Float:E_PBAR_FILLER_RIGHT,
+	Float:E_PBAR_FILLER_HEIGHT,
+	Float:E_PBAR_VALUE_POS_X,
+	Float:E_PBAR_VALUE_POS_Y,
+	Float:E_PBAR_VALUE_RIGHT,
+	Float:E_PBAR_VALUE_HEIGHT,
+};
+
+static PlayerText:pbar_TextDraw[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_TEXT_DRAW];
 
 new
 	#if(defined _INC_y_iterate)
@@ -82,6 +109,7 @@ new
 	#endif
 	pbar_Data[MAX_PLAYERS][MAX_PLAYER_BARS][E_BAR_DATA]
 ;
+static bool:is_progressbar_initialised = false;
 
 //	Reset info of player progress bar.
 stock PlayerBarUI_ResetPlayerItem(const playerid, const PlayerBar:barid) {
@@ -102,6 +130,7 @@ stock PlayerBarUI_ResetAll() {
 	for(new playerid = 0; playerid < MAX_PLAYERS; ++playerid) {
 		PlayerBarUI_ResetPlayer(playerid);
 	}
+	is_progressbar_initialised = true;
 }
 //	Returns free player progress bar.
 stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
@@ -111,6 +140,20 @@ stock PlayerBar:PlayerBarUI_FindFree(const playerid) {
 		}
 	}
 	return INVALID_PLAYER_BAR_ID;
+}
+//	Returns true if value-textdraw needs to be drawn due of current value relation to min/max values.
+static stock bool:PlayerBarUI_isNeedToDrawValue(const progressbar_direction:direction, const Float:cur_value, const Float:min_value, const Float:max_value) {
+	if( direction == BAR_DIRECTION_HORIZONTAL_FROM_0 || direction == BAR_DIRECTION_VERTICAL_FROM_0 ) {
+		if( max_value < 0.0 ) {
+			return (cur_value < max_value);
+		} else if( min_value > 0.0 ) {
+			return (cur_value > min_value);
+		} else {
+			return (floatabs(cur_value) > 0.001 * (max_value - min_value));
+		}
+	} else {
+		return (cur_value > min_value);
+	}
 }
 
 forward PlayerBar:CreatePlayerProgressBar(
@@ -137,6 +180,9 @@ stock PlayerBar:CreatePlayerProgressBar(
 			Logger_I("playerid", playerid));
 		#endif
 		return INVALID_PLAYER_BAR_ID;
+	}
+	if( !is_progressbar_initialised ) {	// auto initialisation at first progress bar creation.
+		PlayerBarUI_ResetAll();
 	}
 
 	#if(defined _INC_y_iterate)
@@ -189,9 +235,7 @@ stock DestroyPlayerProgressBar(const playerid, const PlayerBar:barid) {
 		return 0;
 	}
 
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
+	_ptextdraw_destroy_array(playerid, pbar_TextDraw[playerid][barid]);
 
 	pbar_Data[playerid][barid][is_created] = false;
 	#if(defined _INC_y_iterate)
@@ -373,47 +417,64 @@ stock SetPlayerProgressBarValue(const playerid, const PlayerBar:barid, Float:val
 	if( !IsValidPlayerProgressBar(playerid, barid) ) {
 		return 0;
 	}
-
 	new
+		boundary[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
-		Float:ratio_to,
-		Float:boundry_size,
-		Float:adopted_size,
-		PlayerText:ptr_main = pbar_TextDraw[playerid][barid][pbar_main]
+		bool:draw_main,
+		color = pbar_Data[playerid][barid][pbar_colour],
+		PlayerText:ptd_main = pbar_TextDraw[playerid][barid][pbar_main]
 	;
 	if( value < min_value ) {
 		value = min_value;
 	} else if( value > max_value ) {
 		value = max_value;
 	}
-	ratio_to = (value - min_value) / (max_value - min_value);
-
-	if( direction == BAR_DIRECTION_RIGHT || direction == BAR_DIRECTION_LEFT ) {
-		boundry_size = pbar_Data[playerid][barid][pbar_width];
-	} else {
-		boundry_size = pbar_Data[playerid][barid][pbar_height];
-	}
-	adopted_size = boundry_size * ratio_to * direction_size_mult[direction];
-
-	PlayerTextDrawUseBox(playerid, ptr_main, value > min_value);
-
 	pbar_Data[playerid][barid][pbar_progressValue] = value;
+	draw_main = PlayerBarUI_isNeedToDrawValue(direction, value, min_value, max_value);
+	PlayerBarUI_computeBoundry(playerid, barid, boundary);
 
-	switch(direction) {
-		case BAR_DIRECTION_RIGHT, BAR_DIRECTION_LEFT, BAR_DIRECTION_HORIZONTAL_FROM_0: {
-			PlayerTextDrawTextSize(playerid, ptr_main, adopted_size, 0.0);
-		}
-		case BAR_DIRECTION_UP, BAR_DIRECTION_DOWN, BAR_DIRECTION_VERTICAL_FROM_0: {
-			PlayerTextDrawLetterSize(playerid, ptr_main, 1.0, adopted_size);
+	#if defined PlayerTextDrawSetPos
+	{
+		PlayerTextDrawSetPos(playerid, ptd_main, boundary[E_PBAR_VALUE_POS_X], boundary[E_PBAR_VALUE_POS_Y]);
+		PlayerTextDrawTextSize(playerid, ptd_main, boundary[E_PBAR_VALUE_RIGHT], 0.0);
+		PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
+		PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
+	}
+	#else
+	{	// Textdraw set position not found. Set with recreation.
+		PlayerTextDrawDestroy(playerid, ptd_main);
+		ptd_main = CreatePlayerTextDraw(
+			playerid,
+			boundary[E_PBAR_VALUE_POS_X],
+			boundary[E_PBAR_VALUE_POS_Y],
+			"_"
+		);
+		new PlayerText:ptd_back = pbar_TextDraw[playerid][barid][pbar_back],
+			PlayerText:ptd_fill = pbar_TextDraw[playerid][barid][pbar_fill]
+		;
+		if(	// Check in new main textdraw is not under filler/background.
+			(ptd_fill != PlayerText:INVALID_TEXT_DRAW && ptd_fill < ptd_main) ||
+			(ptd_back != PlayerText:INVALID_TEXT_DRAW && ptd_back < ptd_main)
+		) {
+			PlayerTextDrawTextSize(playerid, ptd_main, boundary[E_PBAR_VALUE_RIGHT], 0.0);
+			PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
+			PlayerTextDrawUseBox(playerid, ptd_main, draw_main);
+			pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
+		} else {	// Rare case: main/value textdraw was created UNDER(with lower ID than) filler/background textdraw -> recreate whole bar again.
+			PlayerTextDrawDestroy(playerid, ptd_back);
+			PlayerTextDrawDestroy(playerid, ptd_fill);
+			PlayerTextDrawDestroy(playerid, ptd_main);
+			PlayerBarUI_createGeometry(playerid, barid, boundary, color, draw_main);
 		}
 	}
+	#endif
+	SetPlayerProgressBarColour(playerid, barid, color);
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
 		ShowPlayerProgressBar(playerid, barid);
 	}
-
 	return 1;
 }
 
@@ -466,6 +527,28 @@ stock SetPlayerProgressBarPadding(const playerid, const PlayerBar:barid, const F
 /*
 	Internal
 */
+static PlayerBarUI_createGeometry(const playerid, const PlayerBar:barid, const boundary[E_PROGRESSBAR_BOUNDRY], const color, const bool:draw_main) {
+	new PlayerText:ptd_back, PlayerText:ptd_fill, PlayerText:ptd_main;
+	ptd_back = CreatePlayerTextDraw(playerid, boundary[E_PBAR_BACKGROUND_POS_X], boundary[E_PBAR_BACKGROUND_POS_Y], "_");
+	PlayerTextDrawTextSize		(playerid, ptd_back, boundary[E_PBAR_BACKGROUND_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, boundary[E_PBAR_BACKGROUND_HEIGHT]);
+	PlayerTextDrawUseBox		(playerid, ptd_back, true);
+
+	ptd_fill = CreatePlayerTextDraw(playerid, boundary[E_PBAR_FILLER_POS_X], boundary[E_PBAR_FILLER_POS_Y], "_");
+	PlayerTextDrawTextSize		(playerid, ptd_fill, boundary[E_PBAR_FILLER_RIGHT], 0.0);
+	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, boundary[E_PBAR_FILLER_HEIGHT]);
+	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
+
+	ptd_main = CreatePlayerTextDraw(playerid, boundary[E_PBAR_VALUE_POS_X], boundary[E_PBAR_VALUE_POS_Y], "_");
+	PlayerTextDrawTextSize(playerid, ptd_main, boundary[E_PBAR_VALUE_RIGHT], 0.0);
+	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, boundary[E_PBAR_VALUE_HEIGHT]);
+	PlayerTextDrawUseBox		(playerid, ptd_main, draw_main);
+
+	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
+	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
+	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
+	SetPlayerProgressBarColour(playerid, barid, color);
+}
 
 _progress2_renderBar(const playerid, const PlayerBar:barid) {
 	if(
@@ -475,113 +558,59 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 		return false;
 	}
 
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_back]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_fill]);
-	PlayerTextDrawDestroy(playerid, pbar_TextDraw[playerid][barid][pbar_main]);
 	new
-		Float:pos_x,
-		Float:pos_y,
-		Float:padding_x, Float:padding_y,
-		Float:width = pbar_Data[playerid][barid][pbar_width],
-		Float:height = pbar_Data[playerid][barid][pbar_height],
+		PlayerText:old_textdraw_array[E_BAR_TEXT_DRAW],
+		boundary[E_PROGRESSBAR_BOUNDRY],
 		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
 		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
 		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
 		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
+		bool:draw_main,
 		color = pbar_Data[playerid][barid][pbar_colour],
-		Float:outer_pos_x2, Float:outer_pos_y2,	// 'back' pos (right bottom corner)
-		Float:inner_pos_x1, Float:inner_pos_y1,	// 'fill' pos (left upper corner)
-		Float:inner_pos_x2, Float:inner_pos_y2,	// 'fill' pos (right bottom corner)
-		Float:inner_size_x, Float:inner_size_y,	// 'fill' size
-		Float:value_pos_x1, Float:value_pos_y1,
-		Float:value_pos_x2, Float:value_pos_y2,
-		Float:value_size_y,
-		Float:size_multiplier = direction_size_mult[direction],
-		bool:is_vertical = (direction > BAR_DIRECTION_HORIZONTAL_FROM_0),
-		Float:ratio_from,
-		Float:ratio_to,
 		PlayerText:ptd_back,
 		PlayerText:ptd_fill,
 		PlayerText:ptd_main
 	;
-	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
-	GetPlayerProgressBarPadding(playerid, barid, padding_x, padding_y);
+	old_textdraw_array = pbar_TextDraw[playerid][barid];
+	_ptextdraw_destroy_array(playerid, old_textdraw_array);
+
 	//	Computing normalized sizes and corner positions in canvas pixels.
-	outer_pos_x2 = pos_x + width;
-	outer_pos_y2 = pos_y + height;
-	inner_pos_x1 = pos_x + padding_x;
-	inner_pos_x2 = outer_pos_x2 - padding_x;
-	inner_pos_y1 = pos_y + padding_y;
-	inner_pos_y2 = outer_pos_y2 - padding_y;
-	inner_size_x = inner_pos_x2 - inner_pos_x1;
-	inner_size_y = inner_pos_y2 - inner_pos_y1;
-	bar_getRatios(direction, cur_value, min_value, max_value, ratio_from, ratio_to);
-	ratio_from *= size_multiplier;
-	ratio_to *= size_multiplier;
-	if( is_vertical ) {
-		value_pos_x1 = inner_pos_x1;
-		value_pos_x2 = inner_pos_x2;
-	} else {	// is horizontal.
-		value_pos_y1 = inner_pos_y1;
-		value_pos_y2 = inner_pos_y2;
-	}
-	switch(direction) {
-		case BAR_DIRECTION_RIGHT:				{ value_pos_x1 = inner_pos_x1; }
-		case BAR_DIRECTION_LEFT:				{ value_pos_x1 = inner_pos_x2; }
-		case BAR_DIRECTION_HORIZONTAL_FROM_0:	{ value_pos_x1 = inner_pos_x1; }
-		case BAR_DIRECTION_UP:					{ value_pos_y1 = inner_pos_y2; }
-		case BAR_DIRECTION_DOWN:				{ value_pos_y1 = inner_pos_y1; }
-		case BAR_DIRECTION_VERTICAL_FROM_0:		{ value_pos_y1 = inner_pos_y2; }
-	}
-	if( is_vertical ) {
-		value_pos_y2 = value_pos_y1;
-		value_pos_y1 += inner_size_y * ratio_from;
-		value_pos_y2 += inner_size_y * ratio_to;
-	} else {
-		value_pos_x2 = value_pos_x1;
-		value_pos_x1 += inner_size_x * ratio_from;
-		value_pos_x2 += inner_size_x * ratio_to;
-	}
-	// normalising ranges.
+	draw_main = PlayerBarUI_isNeedToDrawValue(direction, cur_value, min_value, max_value);
+	PlayerBarUI_computeBoundry(playerid, barid, boundary);
+
+	PlayerBarUI_createGeometry(playerid, barid, boundary, color, draw_main);
+	ptd_back = pbar_TextDraw[playerid][barid][pbar_main];
+	ptd_fill = pbar_TextDraw[playerid][barid][pbar_fill];
+	ptd_main = pbar_TextDraw[playerid][barid][pbar_back];
+
+	//	Fixing very special bug:
+	//		Past versions of progress bars never hide destroyed textdraws from previous state (PlayerTextDrawDestroy doesn't hiding anything).
+	//		ProgressBar was always hopes that textdraw IDs will be same after bar recreation.
+	//		That can lead to some of bar's textdraw still drawn on player screen.
+	//		You can reproduce:
+	//		1) Create some of your textdraws.
+	//		2) Create progress bar.
+	//		3) Remove some previous textdraws.
+	//		4) Recreate progress bar.
+	//		5) Do not create & show textdraws anymore.
 	{
-		new Float:temp_value;
-		if( value_pos_x1 > value_pos_x2 ) {
-			temp_value = value_pos_x2;
-			value_pos_x2 = value_pos_x1;
-			value_pos_x1 = temp_value;
-		}
-		if( value_pos_y1 > value_pos_y2 ) {
-			temp_value = value_pos_y2;
-			value_pos_y2 = value_pos_y1;
-			value_pos_y1 = temp_value;
+		new E_BAR_TEXT_DRAW:td_slot_old,
+			E_BAR_TEXT_DRAW:td_slot_new,
+			PlayerText:old_textdraw_item
+		;
+		for(td_slot_old = E_BAR_TEXT_DRAW:0; td_slot_old < E_BAR_TEXT_DRAW:sizeof(old_textdraw_array); ++td_slot_old) {
+			old_textdraw_item = old_textdraw_array[td_slot_old];
+			for(td_slot_new = E_BAR_TEXT_DRAW:0; td_slot_new < E_BAR_TEXT_DRAW:sizeof(old_textdraw_array); ++td_slot_new) {
+				if(
+					old_textdraw_item != ptd_back &&
+					old_textdraw_item != ptd_fill &&
+					old_textdraw_item != ptd_main
+				) {
+					PlayerTextDrawHide(playerid, old_textdraw_item);	// Hiding after destroying? Just send RPC.
+				}
+			}
 		}
 	}
-	new Float:correction_x = 1.25;
-	value_pos_x1 += correction_x;
-	value_pos_x2 -= correction_x;
-	inner_pos_x1 += correction_x;
-	inner_pos_x2 -= correction_x;
-
-	value_size_y = value_pos_y2 - value_pos_y1;
-
-	ptd_back = CreatePlayerTextDraw(playerid, pos_x, pos_y, "_");
-	ptd_fill = CreatePlayerTextDraw(playerid, inner_pos_x1, inner_pos_y1, "_");
-	ptd_main = CreatePlayerTextDraw(playerid, value_pos_x1, value_pos_y1, "_");
-	PlayerTextDrawTextSize(playerid, ptd_main, value_pos_x2, 0.0);
-	PlayerTextDrawLetterSize(playerid, ptd_main, 1.0, value_size_y / 10.0);
-
-	PlayerTextDrawTextSize		(playerid, ptd_back, outer_pos_x2, 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_back, 1.0, height / 10.0);
-	PlayerTextDrawTextSize		(playerid, ptd_fill, inner_pos_x2, 0.0);
-	PlayerTextDrawLetterSize	(playerid, ptd_fill, 1.0, inner_size_y / 10.0);
-
-	pbar_TextDraw[playerid][barid][pbar_back] = ptd_back;
-	pbar_TextDraw[playerid][barid][pbar_fill] = ptd_fill;
-	pbar_TextDraw[playerid][barid][pbar_main] = ptd_main;
-	PlayerTextDrawUseBox		(playerid, ptd_back, true);
-	PlayerTextDrawUseBox		(playerid, ptd_fill, true);
-	PlayerTextDrawUseBox		(playerid, ptd_main, true);
-	SetPlayerProgressBarColour(playerid, barid, color);
 
 	if( pbar_Data[playerid][barid][pbar_show] ) {
 		ShowPlayerProgressBar(playerid, barid);
@@ -591,6 +620,7 @@ _progress2_renderBar(const playerid, const PlayerBar:barid) {
 }
 #if(defined _INC_y_hooks)
 hook OnScriptInit() {
+	PlayerBarUI_ResetAll();
 	#if(defined _INC_y_iterate)
 	Iter_Init(pbar_Index);
 	#endif
@@ -633,4 +663,101 @@ static stock bar_getRatios(const progressbar_direction:direction, const Float:cu
 		ratio_from = 0.0;
 	}
 	ratio_to = (cur_value - min_value) / range_value;
+}
+
+static stock _ptextdraw_destroy_array(const playerid, const PlayerText:ptd_array[E_BAR_TEXT_DRAW]) {
+	for(new E_BAR_TEXT_DRAW:ptd_slot = E_BAR_TEXT_DRAW:0; ptd_slot < E_BAR_TEXT_DRAW:3; ++ptd_slot) {
+		PlayerTextDrawDestroy(playerid, ptd_array[ptd_slot]);
+	}
+}
+
+static stock _normalise_range_f(&Float:value_a, &Float:value_b) {
+	if( value_a > value_b ) {
+		new Float:temp_value = value_b;
+		value_b = value_a;
+		value_a = temp_value;
+	}
+}
+
+static stock PlayerBarUI_computeBoundry(const playerid, const PlayerBar:barid, boundary[E_PROGRESSBAR_BOUNDRY]) {
+	new
+		Float:pos_x, Float:pos_y,
+		Float:padding_x, Float:padding_y,
+		Float:width = pbar_Data[playerid][barid][pbar_width],
+		Float:height = pbar_Data[playerid][barid][pbar_height],
+		Float:min_value = pbar_Data[playerid][barid][pbar_minValue],
+		Float:max_value = pbar_Data[playerid][barid][pbar_maxValue],
+		Float:cur_value = pbar_Data[playerid][barid][pbar_progressValue],
+		progressbar_direction:direction = pbar_Data[playerid][barid][pbar_direction],
+		Float:outer_pos_x2, Float:outer_pos_y2,	// 'back' pos (right bottom corner)
+		Float:inner_pos_x1, Float:inner_pos_y1,	// 'fill' pos (left upper corner)
+		Float:inner_pos_x2, Float:inner_pos_y2,	// 'fill' pos (right bottom corner)
+		Float:inner_size_x, Float:inner_size_y,	// 'fill' size
+		Float:value_pos_x1, Float:value_pos_y1,
+		Float:value_pos_x2, Float:value_pos_y2,
+		Float:size_multiplier = direction_size_mult[direction],
+		bool:is_vertical = (direction > BAR_DIRECTION_HORIZONTAL_FROM_0),
+		Float:ratio_from, Float:ratio_to
+	;
+	GetPlayerProgressBarPos(playerid, barid, pos_x, pos_y);
+	GetPlayerProgressBarPadding(playerid, barid, padding_x, padding_y);
+	//	Computing normalized sizes and corner positions in canvas pixels.
+	outer_pos_x2 = pos_x + width;
+	outer_pos_y2 = pos_y + height;
+	inner_pos_x1 = pos_x + padding_x;
+	inner_pos_x2 = outer_pos_x2 - padding_x;
+	inner_pos_y1 = pos_y + padding_y;
+	inner_pos_y2 = outer_pos_y2 - padding_y;
+	inner_size_x = inner_pos_x2 - inner_pos_x1;
+	inner_size_y = inner_pos_y2 - inner_pos_y1;
+	bar_getRatios(direction, cur_value, min_value, max_value, ratio_from, ratio_to);
+	ratio_from *= size_multiplier;
+	ratio_to *= size_multiplier;
+	if( is_vertical ) {
+		value_pos_x1 = inner_pos_x1;
+		value_pos_x2 = inner_pos_x2;
+	} else {	// is horizontal.
+		value_pos_y1 = inner_pos_y1;
+		value_pos_y2 = inner_pos_y2;
+	}
+	switch(direction) {
+		case BAR_DIRECTION_RIGHT:				{ value_pos_x1 = inner_pos_x1; }
+		case BAR_DIRECTION_LEFT:				{ value_pos_x1 = inner_pos_x2; }
+		case BAR_DIRECTION_HORIZONTAL_FROM_0:	{ value_pos_x1 = inner_pos_x1; }
+		case BAR_DIRECTION_UP:					{ value_pos_y1 = inner_pos_y2; }
+		case BAR_DIRECTION_DOWN:				{ value_pos_y1 = inner_pos_y1; }
+		case BAR_DIRECTION_VERTICAL_FROM_0:		{ value_pos_y1 = inner_pos_y2; }
+	}
+	if( is_vertical ) {
+		value_pos_y2 = value_pos_y1;
+		value_pos_y1 += inner_size_y * ratio_from;
+		value_pos_y2 += inner_size_y * ratio_to;
+	} else {
+		value_pos_x2 = value_pos_x1;
+		value_pos_x1 += inner_size_x * ratio_from;
+		value_pos_x2 += inner_size_x * ratio_to;
+	}
+	// normalising ranges.
+	{
+		_normalise_range_f(value_pos_x1, value_pos_x2);
+		_normalise_range_f(value_pos_y1, value_pos_y2);
+	}
+	new Float:correction_x = 1.25;
+	value_pos_x1 += correction_x;
+	value_pos_x2 -= correction_x;
+	inner_pos_x1 += correction_x;
+	inner_pos_x2 -= correction_x;
+
+	boundary[E_PBAR_BACKGROUND_POS_X] = pos_x;
+	boundary[E_PBAR_BACKGROUND_POS_Y] = pos_y;
+	boundary[E_PBAR_BACKGROUND_RIGHT] = outer_pos_x2;
+	boundary[E_PBAR_BACKGROUND_HEIGHT] = 0.1 * (outer_pos_y2 - pos_y);
+	boundary[E_PBAR_FILLER_POS_X] = inner_pos_x1;
+	boundary[E_PBAR_FILLER_POS_Y] = inner_pos_y1;
+	boundary[E_PBAR_FILLER_RIGHT] = inner_pos_x2;
+	boundary[E_PBAR_FILLER_HEIGHT] = 0.1 * (inner_pos_y2 - inner_pos_y1);
+	boundary[E_PBAR_VALUE_POS_X] = value_pos_x1;
+	boundary[E_PBAR_VALUE_POS_Y] = value_pos_y1;
+	boundary[E_PBAR_VALUE_RIGHT] = value_pos_x2;
+	boundary[E_PBAR_VALUE_HEIGHT] = 0.1 * (value_pos_y2 - value_pos_y1);
 }
